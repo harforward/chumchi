@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#1c0e08"/>
+  <title>Chumchi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet"/>
+  <style>
+
+    /* ── Hard reset — fight GitHub Pages wrapper ── */
+    html, body {
+      width: 100% !important;
+      height: 100% !important;
+      min-height: 100vh !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      outline: none !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+      background: #1a0c08 !important;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Cormorant Garamond', serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* ── Gradient background — no image ── */
+    .bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      /* Warm India sunrise gradient */
+      background:
+        radial-gradient(ellipse at 65% 38%, rgba(220,120,60,0.55) 0%, transparent 55%),
+        radial-gradient(ellipse at 30% 60%, rgba(160,80,120,0.35) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(240,180,80,0.3) 0%, transparent 45%),
+        radial-gradient(ellipse at 20% 30%, rgba(140,100,160,0.25) 0%, transparent 40%),
+        linear-gradient(165deg, #1a0c1a 0%, #2a1208 30%, #3a1a08 55%, #1a0808 100%);
+    }
+
+    /* Subtle ambient shimmer */
+    .bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 40%,
+        rgba(255,200,100,0.08) 0%,
+        transparent 60%
+      );
+      animation: shimmer 8s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%,100% { opacity: 0.6; }
+      50%      { opacity: 1; }
+    }
+
+    /* ── Centering wrapper ── */
+    .center {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100vh;
+      padding: 1rem;
+    }
+
+    /* ── Glass box — fixed pixel width, no fluid sizing ── */
+    .box {
+      position: relative;
+      /* Fixed 300px — everything calculated against this, never fluid */
+      width: 300px;
+      padding: 2.6rem 2.2rem 2.2rem;
+
+      /* Pure mist — image shows through completely */
+      background: rgba(255, 248, 232, 0.06);
+      backdrop-filter: blur(24px) saturate(1.2);
+      -webkit-backdrop-filter: blur(24px) saturate(1.2);
+
+      /* Magenta + cyan dual glow on box */
+      box-shadow:
+        0 0 40px rgba(200, 60, 160, 0.12),
+        0 0 80px rgba(0, 200, 220, 0.08),
+        inset 0 1px 0 rgba(255,248,232,0.08);
+
+      animation: rise 0.75s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Bracket corners — pixel-perfect, no pseudo-element overlap issues ── */
+    .box .c {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-color: rgba(255, 248, 232, 0.55);
+      border-style: solid;
+    }
+    .box .c-tl { top: 0;    left: 0;    border-width: 1px 0 0 1px; }
+    .box .c-tr { top: 0;    right: 0;   border-width: 1px 1px 0 0; }
+    .box .c-bl { bottom: 0; left: 0;    border-width: 0 0 1px 1px; }
+    .box .c-br { bottom: 0; right: 0;   border-width: 0 1px 1px 0; }
+
+    /* ── Spoon + CHUMCHI lockup ── */
+    .wordmark {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* Total available = 300px box - 44px padding = 256px */
+      width: 256px;
+      gap: 0;
+    }
+
+    .spoon {
+      /* Fixed spoon width */
+      width: 11px;
+      flex-shrink: 0;
+      margin-right: 8px;
+      margin-top: -2px;
+    }
+
+    .wordmark-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+
+      /* CHUMCHI in Cormorant at 0.22em letter-spacing:
+         ~7 chars × ~17px avg + 6 gaps × 0.22em × 17px ≈ 141px.
+         Fixed 28px sits comfortably in 245px remaining.
+         Use a fixed px size — no clamp, no vw, no em relative to viewport */
+      font-size: 28px;
+      letter-spacing: 0.22em;
+      /* Optical compensation: trailing letter-spacing eats right side */
+      padding-right: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255, 248, 228, 0.95);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    /* ── Silver Spoon Energy — bevel caps + magenta/cyan glow ── */
+    .tagline {
+      margin-top: 0.55rem;
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: 9px;
+      letter-spacing: 0.32em;
+      padding-right: 0.32em; /* optical compensation */
+      text-transform: uppercase;
+      white-space: nowrap;
+
+      /* Bevel silver gradient */
+      background: linear-gradient(
+        175deg,
+        rgba(255,255,255,0.98) 0%,
+        rgba(215,218,235,0.92) 30%,
+        rgba(165,170,195,0.88) 60%,
+        rgba(205,210,228,0.92) 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+
+      /* Magenta + cyan chromatic glow */
+      filter:
+        drop-shadow(0 0 6px rgba(220, 40, 180, 0.55))
+        drop-shadow(0 0 12px rgba(0, 220, 240, 0.4))
+        drop-shadow(0 0 3px rgba(255,255,255,0.6));
+
+      animation: chromaGlow 4s ease-in-out infinite;
+    }
+
+    @keyframes chromaGlow {
+      0%,100% {
+        filter:
+          drop-shadow(0 0 5px rgba(220,40,180,0.45))
+          drop-shadow(0 0 10px rgba(0,220,240,0.3))
+          drop-shadow(0 0 2px rgba(255,255,255,0.5));
+      }
+      50% {
+        filter:
+          drop-shadow(0 0 10px rgba(220,40,180,0.75))
+          drop-shadow(0 0 20px rgba(0,220,240,0.6))
+          drop-shadow(0 0 6px rgba(255,255,255,0.8));
+      }
+    }
+
+    /* ── Hairline divider ── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 1.6rem 0 1.5rem;
+    }
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: rgba(255,248,232,0.12);
+    }
+    .divider-dot {
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: rgba(255,210,100,0.5);
+      flex-shrink: 0;
+    }
+
+    /* ── Input field + Enter — full width of inner box ── */
+    .field {
+      display: flex;
+      width: 100%;
+      border: 1px solid rgba(255,248,232,0.22);
+      /* Magenta + cyan micro-glow on input */
+      box-shadow:
+        0 0 12px rgba(220,40,180,0.12),
+        0 0 20px rgba(0,220,240,0.08);
+    }
+
+    .field input {
+      flex: 1;
+      min-width: 0;
+      padding: 0.82rem 0.9rem;
+      background: rgba(255,248,232,0.05);
+      border: none;
+      outline: none;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 14px;
+      font-style: italic;
+      letter-spacing: 0.1em;
+      color: rgba(255, 248, 228, 0.88);
+      -webkit-appearance: none;
+      border-radius: 0;
+    }
+
+    .field input::placeholder {
+      color: rgba(255,248,228,0.3);
+      font-style: italic;
+      letter-spacing: 0.12em;
+    }
+
+    /* Magenta/cyan glow on focus */
+    .field:focus-within {
+      border-color: rgba(255,248,232,0.4);
+      box-shadow:
+        0 0 18px rgba(220,40,180,0.25),
+        0 0 32px rgba(0,220,240,0.18),
+        inset 0 0 8px rgba(220,40,180,0.05);
+    }
+
+    .field button {
+      flex-shrink: 0;
+      padding: 0.82rem 1rem;
+      background: rgba(200,100,50,0.32);
+      border: none;
+      border-left: 1px solid rgba(255,248,232,0.14);
+      cursor: pointer;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: rgba(255,248,228,0.85);
+      transition: background 0.2s, box-shadow 0.2s;
+      white-space: nowrap;
+      border-radius: 0;
+      -webkit-appearance: none;
+    }
+
+    .field button:hover {
+      background: rgba(200,100,50,0.58);
+      box-shadow: 0 0 12px rgba(220,40,180,0.2);
+    }
+
+    /* ── Error message ── */
+    .err {
+      margin-top: 0.55rem;
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: rgba(255,180,140,0.7);
+      min-height: 1rem;
+    }
+
+    /* ── QA: mobile — stack stays identical ── */
+    @media (max-width: 400px) {
+      .box {
+        width: 280px;
+        padding: 2.2rem 1.8rem 2rem;
+      }
+      .wordmark { width: 244px; }
+      .wordmark-text { font-size: 26px; }
+    }
+
+    /* ── QA: very small phones ── */
+    @media (max-width: 320px) {
+      .box {
+        width: 260px;
+        padding: 2rem 1.6rem 1.8rem;
+      }
+      .wordmark { width: 228px; }
+      .wordmark-text { font-size: 23px; }
+    }
+
+    /* ── QA: large / 4K — box stays fixed, centered ── */
+    @media (min-width: 1200px) {
+      /* No changes — fixed 300px box is intentional */
+    }
+
+    /* Reduce motion */
+    @media (prefers-reduced-motion: reduce) {
+      .box, .bg::after { animation: none; }
+      .tagline { animation: none; }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Gradient background — no image dependency -->
+  <div class="bg"></div>
+
+  <div class="center">
+    <div class="box">
+
+      <!-- Bracket corners -->
+      <span class="c c-tl"></span>
+      <span class="c c-tr"></span>
+      <span class="c c-bl"></span>
+      <span class="c c-br"></span>
+
+      <!-- Wordmark -->
+      <div class="wordmark">
+        <svg class="spoon" viewBox="0 0 20 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="10" cy="8" rx="6" ry="7.5" stroke="rgba(255,248,228,0.72)" stroke-width="1.1"/>
+          <line x1="10" y1="15.5" x2="10" y2="51" stroke="rgba(255,248,228,0.72)" stroke-width="1.1" stroke-linecap="round"/>
+        </svg>
+        <span class="wordmark-text">Chumchi</span>
+      </div>
+
+      <!-- Tagline -->
+      <div class="tagline">Silver Spoon Energy</div>
+
+      <!-- Divider -->
+      <div class="divider">
+        <div class="divider-line"></div>
+        <div class="divider-dot"></div>
+        <div class="divider-line"></div>
+      </div>
+
+      <!-- Access field -->
+      <div class="field">
+        <input
+          type="password"
+          id="pwd"
+          placeholder="Access Here"
+          autocomplete="off"
+          onkeydown="if(event.key==='Enter') go()"
+        />
+        <button onclick="go()">Enter</button>
+      </div>
+
+      <p class="err" id="err"></p>
+
+    </div>
+  </div>
+
+  <script>
+    // Redirect if already authenticated
+    if (sessionStorage.getItem('chumchi_site') === 'true') {
+      window.location.href = 'platform/login.html';
+    }
+
+    function go() {
+      const v = document.getElementById('pwd').value.trim();
+      if (v === 'tree2026') {
+        sessionStorage.setItem('chumchi_site', 'true');
+        window.location.href = 'platform/login.html';
+      } else {
+        document.getElementById('err').textContent = 'Incorrect — try again.';
+        document.getElementById('pwd').value = '';
+        document.getElementById('pwd').focus();
+      }
+    }
+  </script>
+
+</body>
+</html>
