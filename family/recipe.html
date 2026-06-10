@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chumchi — Recipes</title>
+  <link rel="stylesheet" href="../assets/style.css"/>
+  <style>
+    body { background: var(--cream); }
+
+    .page-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.2rem 5rem;
+    }
+
+    /* Member header */
+    .member-header {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .member-avatar {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .member-avatar span {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 300;
+      color: var(--bark);
+    }
+
+    .member-info h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 300;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--bark);
+      line-height: 1;
+    }
+
+    .member-info p {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 0.85rem;
+      color: var(--clay);
+      margin-top: 0.3rem;
+    }
+
+    /* Recipe grid */
+    .recipe-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Recipe card */
+    .recipe-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-soft);
+      cursor: pointer;
+      transition: var(--transition);
+      border-left: 3px solid transparent;
+      position: relative;
+    }
+
+    .recipe-card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+      border-left-color: var(--clay);
+    }
+
+    .recipe-card.open {
+      border-left-color: var(--clay);
+    }
+
+    .rc-title {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: var(--bark);
+      letter-spacing: 0.06em;
+      margin-bottom: 0.5rem;
+    }
+
+    .rc-tags { margin-bottom: 0.8rem; }
+
+    .rc-uploaded {
+      font-size: 0.65rem;
+      color: var(--clay);
+      opacity: 0.65;
+      font-style: italic;
+      letter-spacing: 0.04em;
+    }
+
+    .rc-move {
+      position: absolute;
+      top: 0.8rem; right: 0.8rem;
+      background: none;
+      border: none;
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.3;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: var(--transition);
+    }
+    .rc-move:hover { opacity: 0.8; color: var(--clay); }
+
+    /* Recipe detail drawer */
+    .recipe-detail {
+      display: none;
+      grid-column: 1 / -1;
+      background: var(--white);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: var(--shadow-soft);
+      animation: slideDown 0.25s ease;
+      border-top: 3px solid var(--clay);
+    }
+
+    .recipe-detail.visible { display: block; }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 600px) {
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+
+    .detail-section h3 {
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--clay);
+      margin-bottom: 0.8rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid rgba(107,79,58,0.1);
+    }
+
+    .detail-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .detail-section ul li {
+      font-size: 0.85rem;
+      color: var(--ink);
+      padding: 0.35rem 0;
+      border-bottom: 1px solid rgba(107,79,58,0.05);
+      display: flex;
+      gap: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .detail-section ul li::before {
+      content: '—';
+      color: var(--clay);
+      opacity: 0.4;
+      flex-shrink: 0;
+      font-size: 0.7rem;
+      margin-top: 0.15rem;
+    }
+
+    /* Steps */
+    .steps-list { counter-reset: step; list-style: none; padding: 0; }
+
+    .steps-list li {
+      counter-increment: step;
+      font-size: 0.85rem;
+      color: var(--ink);
+      padding: 0.5rem 0 0.5rem 2rem;
+      border-bottom: 1px solid rgba(107,79,58,0.05);
+      position: relative;
+      line-height: 1.5;
+    }
+
+    .steps-list li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0.5rem;
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      color: var(--clay);
+      opacity: 0.5;
+      font-weight: 500;
+    }
+
+    /* Raw source toggle */
+    .raw-toggle {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px dashed rgba(107,79,58,0.15);
+    }
+
+    .raw-toggle button {
+      background: none;
+      border: none;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.4;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: var(--transition);
+    }
+    .raw-toggle button:hover { opacity: 0.8; }
+
+    .raw-note {
+      display: none;
+      margin-top: 0.8rem;
+      font-size: 0.75rem;
+      font-style: italic;
+      color: var(--bark);
+      opacity: 0.55;
+      background: var(--cream);
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      line-height: 1.6;
+    }
+
+    .raw-note.visible { display: block; }
+
+    /* Move modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(44,33,24,0.35);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 360px;
+      box-shadow: 0 16px 56px rgba(107,79,58,0.2);
+      animation: panelIn 0.22s ease;
+    }
+
+    .modal-box h3 {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--bark);
+      letter-spacing: 0.06em;
+      margin-bottom: 0.4rem;
+    }
+
+    .modal-box p {
+      font-size: 0.78rem;
+      color: var(--bark);
+      opacity: 0.6;
+      margin-bottom: 1.2rem;
+      font-style: italic;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 1.2rem;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.45;
+      text-decoration: none;
+      margin-bottom: 1.5rem;
+      transition: var(--transition);
+    }
+    .back-link:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="top-nav">
+    <a href="tree.html" class="nav-brand">
+      <img src="../assets/spoon.svg" style="width:14px;opacity:0.7;" alt=""/> Chumchi
+    </a>
+    <ul class="nav-links">
+      <li><a href="upload.html">+ Add Recipe</a></li>
+      <li><a href="#" onclick="logout()">Sign Out</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-wrap">
+
+    <a href="tree.html" class="back-link">← Back to Tree</a>
+
+    <!-- Member header (populated by JS) -->
+    <div class="member-header" id="memberHeader"></div>
+
+    <!-- Recipe grid -->
+    <div class="recipe-grid" id="recipeGrid"></div>
+
+    <!-- Recipe detail drawer -->
+    <div class="recipe-detail" id="recipeDetail"></div>
+
+  </div>
+
+  <!-- Move recipe modal -->
+  <div class="modal-overlay" id="moveModal">
+    <div class="modal-box">
+      <h3>Move Recipe</h3>
+      <p>Reassign this recipe to another family member.</p>
+      <div class="form-group">
+        <label class="form-label" style="font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--bark);opacity:0.55;display:block;margin-bottom:0.4rem;">
+          Assign To
+        </label>
+        <select class="input-field" id="moveTarget"></select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" style="flex:1;" onclick="closeMove()">Cancel</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="confirmMove()">Move</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/app.js"></script>
+  <script>
+    if (sessionStorage.getItem('chumchi_site') !== 'true') window.location.href = '../index.html';
+    const sess = JSON.parse(sessionStorage.getItem('chumchi_session') || 'null');
+    if (!sess) window.location.href = '../platform/login.html';
+
+    const params   = new URLSearchParams(window.location.search);
+    const memberId = params.get('member') || 'meher';
+    const MEMBERS  = TREE.rafiq.members;
+    const member   = MEMBERS[memberId] || MEMBERS['meher'];
+
+    // Recipe store (in-memory, mutable for move)
+    let recipes = RECIPES.rafiq.map(r => ({ ...r }));
+
+    function getMemberRecipesLocal(mId) {
+      return recipes.filter(r => r.assignedTo === mId);
+    }
+
+    let openRecipeId = null;
+    let moveRecipeId = null;
+
+    // ── Render member header ──
+    function renderHeader() {
+      const colors = { bubble_blush: '#F2C4B0', bubble_sage: '#C8D8C0', bubble_saffron: '#F0C070', bubble_lilac: '#D4C0D8', bubble_cream: '#FDF6EC' };
+      const col = colors[member.color?.replace('-','_')] || '#F2C4B0';
+      const rList = getMemberRecipesLocal(memberId);
+      document.getElementById('memberHeader').innerHTML = `
+        <div class="member-avatar" style="background:${col};">
+          <span>${member.name[0]}</span>
+        </div>
+        <div class="member-info">
+          <h1>${member.name}${member.maidenName ? ' <span style="font-size:0.6em;opacity:0.5;letter-spacing:0.1em;">née ' + member.maidenName + '</span>' : ''}</h1>
+          <p>${member.role} · ${rList.length} recipe${rList.length !== 1 ? 's' : ''}</p>
+        </div>
+      `;
+    }
+
+    // ── Render recipe grid ──
+    function renderGrid() {
+      const rList = getMemberRecipesLocal(memberId);
+      const grid  = document.getElementById('recipeGrid');
+      const detail = document.getElementById('recipeDetail');
+
+      if (rList.length === 0) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;opacity:0.4;">
+          <p style="font-family:var(--font-display);font-style:italic;font-size:1.1rem;color:var(--bark);">No recipes yet.</p>
+          <a href="upload.html?member=${memberId}" class="btn btn-soft" style="margin-top:1rem;display:inline-block;">Upload First Recipe</a>
+        </div>`;
+        return;
+      }
+
+      grid.innerHTML = rList.map(r => `
+        <div class="recipe-card ${openRecipeId === r.id ? 'open' : ''}"
+             id="card-${r.id}"
+             onclick="toggleDetail('${r.id}')">
+          <button class="rc-move" onclick="event.stopPropagation();openMove('${r.id}')">⇌ Move</button>
+          <div class="rc-title">${r.title}</div>
+          <div class="rc-tags">${(r.tags||[]).map(t => `<span class="recipe-tag">${t}</span>`).join('')}</div>
+          <div class="rc-uploaded">
+            Uploaded by ${MEMBERS[r.uploadedBy]?.name || r.uploadedBy} · ${formatDate(r.uploadDate)}
+          </div>
+        </div>
+      `).join('');
+
+      // Re-render detail if open
+      if (openRecipeId) renderDetail(openRecipeId);
+    }
+
+    function toggleDetail(id) {
+      const detail = document.getElementById('recipeDetail');
+      if (openRecipeId === id) {
+        openRecipeId = null;
+        detail.classList.remove('visible');
+        detail.innerHTML = '';
+        document.querySelectorAll('.recipe-card').forEach(c => c.classList.remove('open'));
+        return;
+      }
+      openRecipeId = id;
+      document.querySelectorAll('.recipe-card').forEach(c => c.classList.remove('open'));
+      document.getElementById('card-' + id)?.classList.add('open');
+      renderDetail(id);
+
+      // Scroll detail into view
+      setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    }
+
+    function renderDetail(id) {
+      const r = recipes.find(x => x.id === id);
+      if (!r) return;
+      const detail = document.getElementById('recipeDetail');
+      detail.classList.add('visible');
+
+      // Place detail after the card's row — insert after grid
+      const grid = document.getElementById('recipeGrid');
+      grid.after(detail);
+
+      detail.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;">
+          <div>
+            <h2 style="font-family:var(--font-display);font-size:1.6rem;font-weight:400;letter-spacing:0.1em;color:var(--bark);">${r.title}</h2>
+            <div style="margin-top:0.3rem;">${(r.tags||[]).map(t=>`<span class="recipe-tag">${t}</span>`).join('')}</div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:0.65rem;" onclick="openMove('${r.id}')">⇌ Move Recipe</button>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-section">
+            <h3>Ingredients</h3>
+            <ul>${(r.ingredients||[]).map(i=>`<li>${i}</li>`).join('')}</ul>
+          </div>
+          <div class="detail-section">
+            <h3>Method</h3>
+            <ol class="steps-list">${(r.steps||[]).map(s=>`<li>${s}</li>`).join('')}</ol>
+          </div>
+        </div>
+
+        <div class="raw-toggle">
+          <button onclick="toggleRaw('raw-${r.id}')">⬡ View Raw Source Notes</button>
+          <div class="raw-note" id="raw-${r.id}">${r.rawNote || 'Original handwritten scan — no additional notes.'}</div>
+        </div>
+      `;
+    }
+
+    function toggleRaw(id) {
+      const el = document.getElementById(id);
+      el?.classList.toggle('visible');
+    }
+
+    // ── Move recipe ──
+    function openMove(id) {
+      moveRecipeId = id;
+      const recipe = recipes.find(r => r.id === id);
+      const sel = document.getElementById('moveTarget');
+      sel.innerHTML = Object.values(MEMBERS)
+        .map(m => `<option value="${m.id}" ${m.id === recipe.assignedTo ? 'selected' : ''}>${m.name} (${m.role})</option>`)
+        .join('');
+      document.getElementById('moveModal').classList.add('open');
+    }
+
+    function closeMove() {
+      document.getElementById('moveModal').classList.remove('open');
+      moveRecipeId = null;
+    }
+
+    function confirmMove() {
+      const target = document.getElementById('moveTarget').value;
+      const r = recipes.find(x => x.id === moveRecipeId);
+      if (r) {
+        r.assignedTo = target;
+        showToast(`"${r.title}" moved to ${MEMBERS[target]?.name || target}`);
+      }
+      closeMove();
+      // If moved away from current member, re-render
+      renderHeader();
+      renderGrid();
+    }
+
+    // ── Utilities ──
+    function formatDate(d) {
+      return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    }
+
+    function logout() {
+      sessionStorage.clear();
+      window.location.href = '../index.html';
+    }
+
+    // Init
+    renderHeader();
+    renderGrid();
+  </script>
+</body>
+</html>
