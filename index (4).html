@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chumchi</title>
+  <link rel="stylesheet" href="assets/style.css"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      background: #1a0f08;
+      overflow: hidden;
+    }
+
+    .bg {
+      position: fixed;
+      inset: 0;
+      background-image: url('assets/bg-login.jpg');
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.82);
+      z-index: 0;
+    }
+
+    /* ── Login box ── */
+    .login-box {
+      position: relative;
+      z-index: 10;
+      width: min(420px, 90vw);
+      padding: 3rem 2.6rem 2.6rem;
+      background: rgba(253, 246, 236, 0.10);
+      backdrop-filter: blur(14px) saturate(1.1);
+      -webkit-backdrop-filter: blur(14px) saturate(1.1);
+      /* No border — only corner marks */
+    }
+
+    /* Bracket corner marks — very thin */
+    .login-box::before,
+    .login-box::after,
+    .corner-bl::before,
+    .corner-br::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-color: rgba(253,246,236,0.55);
+      border-style: solid;
+    }
+
+    .login-box::before {
+      top: 0; left: 0;
+      border-width: 1px 0 0 1px;
+    }
+    .login-box::after {
+      top: 0; right: 0;
+      border-width: 1px 1px 0 0;
+    }
+    .corner-bl::before {
+      bottom: 0; left: 0;
+      border-width: 0 0 1px 1px;
+    }
+    .corner-br::after {
+      bottom: 0; right: 0;
+      border-width: 0 1px 1px 0;
+    }
+
+    /* Title */
+    .site-title {
+      text-align: center;
+      margin-bottom: 0.3rem;
+    }
+
+    .site-title h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(3rem, 9vw, 4.4rem);
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: rgba(253,246,236,0.95);
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .spoon-inline {
+      display: inline-block;
+      width: 22px;
+      opacity: 0.7;
+      vertical-align: middle;
+      margin-right: 2px;
+    }
+
+    .site-subtitle {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.9rem;
+      letter-spacing: 0.18em;
+      color: rgba(240,192,112,0.85);
+      margin-bottom: 2.2rem;
+    }
+
+    /* Divider */
+    .thin-line {
+      width: 32px;
+      height: 1px;
+      background: rgba(253,246,236,0.25);
+      margin: 0 auto 2rem;
+    }
+
+    /* Input row */
+    .input-row {
+      display: flex;
+      gap: 0;
+      border: 1px solid rgba(253,246,236,0.22);
+    }
+
+    .input-row input {
+      flex: 1;
+      padding: 0.9rem 1.1rem;
+      background: rgba(253,246,236,0.07);
+      border: none;
+      outline: none;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      color: rgba(253,246,236,0.9);
+      font-style: italic;
+    }
+
+    .input-row input::placeholder {
+      color: rgba(253,246,236,0.35);
+      font-style: italic;
+      letter-spacing: 0.12em;
+    }
+
+    .input-row button {
+      padding: 0.9rem 1.4rem;
+      background: rgba(196,120,90,0.45);
+      border: none;
+      border-left: 1px solid rgba(253,246,236,0.15);
+      cursor: pointer;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(253,246,236,0.9);
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .input-row button:hover {
+      background: rgba(196,120,90,0.7);
+    }
+
+    .error-msg {
+      text-align: center;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      font-style: italic;
+      color: rgba(242,196,176,0.8);
+      margin-top: 0.7rem;
+      min-height: 1rem;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap');
+  </style>
+</head>
+<body>
+
+  <div class="bg"></div>
+
+  <div class="login-box corner-bl corner-br">
+
+    <div class="site-title">
+      <h1>
+        <svg class="spoon-inline" viewBox="0 0 24 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="12" cy="10" rx="7" ry="9" stroke="rgba(253,246,236,0.8)" stroke-width="1.2"/>
+          <line x1="12" y1="19" x2="12" y2="58" stroke="rgba(253,246,236,0.8)" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        Chumchi
+      </h1>
+    </div>
+    <div class="site-subtitle">silver spoon energy</div>
+    <div class="thin-line"></div>
+
+    <div class="input-row">
+      <input
+        type="password"
+        id="sitePwd"
+        placeholder="Access Here"
+        autocomplete="off"
+        onkeydown="if(event.key==='Enter') checkPwd()"
+      />
+      <button onclick="checkPwd()">Enter</button>
+    </div>
+
+    <p class="error-msg" id="errMsg"></p>
+
+  </div>
+
+  <script>
+    if (sessionStorage.getItem('chumchi_site') === 'true') {
+      window.location.href = 'platform/login.html';
+    }
+
+    function checkPwd() {
+      const val = document.getElementById('sitePwd').value.trim();
+      if (val === 'tree2026') {
+        sessionStorage.setItem('chumchi_site', 'true');
+        window.location.href = 'platform/login.html';
+      } else {
+        document.getElementById('errMsg').textContent = 'Incorrect. Try again.';
+        document.getElementById('sitePwd').value = '';
+      }
+    }
+  </script>
+</body>
+</html>
