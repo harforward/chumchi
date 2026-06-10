@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chumchi — Family Tree</title>
+  <link rel="stylesheet" href="../assets/style.css"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #FDF6EC; --blush: #F2C4B0; --sage: #C8D8C0;
+      --saffron: #F0C070; --lilac: #D4C0D8; --clay: #C4785A;
+      --bark: #6B4F3A; --ink: #2C2118; --white: #FFFFFF;
+    }
+
+    body {
+      background: #FFFFFF;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ══ TOP NAV ══ */
+    .top-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 52px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(107,79,58,0.08);
+      display: flex;
+      align-items: center;
+      padding: 0 1.5rem;
+      z-index: 100;
+      gap: 1rem;
+    }
+
+    .nav-hamburger {
+      width: 36px; height: 36px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      padding: 4px;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    .nav-hamburger:hover { background: rgba(107,79,58,0.06); }
+    .nav-hamburger span {
+      display: block;
+      height: 1.5px;
+      background: var(--bark);
+      border-radius: 2px;
+      transition: all 0.25s;
+    }
+
+    .nav-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      font-weight: 300;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--bark);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .nav-brand svg { width: 12px; opacity: 0.6; }
+
+    .nav-tree-label {
+      margin-left: auto;
+      font-size: 0.6rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.35;
+    }
+
+    /* ══ SIDEBAR ══ */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 240px;
+      height: 100vh;
+      background: rgba(107,79,58,0.96);
+      backdrop-filter: blur(12px);
+      z-index: 200;
+      transform: translateX(-100%);
+      transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 0;
+      box-shadow: 4px 0 32px rgba(44,33,24,0.18);
+    }
+
+    .sidebar.open { transform: translateX(0); }
+
+    .sidebar-close {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      background: none; border: none;
+      color: rgba(253,246,236,0.5);
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .sidebar-close:hover { color: rgba(253,246,236,0.9); }
+
+    .sidebar-brand {
+      padding: 0 1.5rem 1.5rem;
+      border-bottom: 1px solid rgba(253,246,236,0.1);
+      margin-bottom: 0.5rem;
+    }
+
+    .sidebar-brand span {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 300;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: rgba(253,246,236,0.9);
+    }
+
+    .sidebar-brand small {
+      display: block;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.72rem;
+      color: rgba(240,192,112,0.7);
+      letter-spacing: 0.1em;
+      margin-top: 0.1rem;
+    }
+
+    .sidebar-nav { flex: 1; padding: 0.5rem 0; }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.75rem 1.5rem;
+      color: rgba(253,246,236,0.65);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .sidebar-item:hover,
+    .sidebar-item.active {
+      color: rgba(253,246,236,0.95);
+      background: rgba(253,246,236,0.08);
+    }
+
+    .sidebar-item .icon {
+      font-size: 0.95rem;
+      width: 18px;
+      text-align: center;
+      opacity: 0.7;
+    }
+
+    .sidebar-section {
+      padding: 0.5rem 1.5rem 0.25rem;
+      font-size: 0.55rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(253,246,236,0.25);
+      margin-top: 0.5rem;
+    }
+
+    .sidebar-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid rgba(253,246,236,0.1);
+    }
+
+    .sidebar-footer button {
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(253,246,236,0.35);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: color 0.2s;
+    }
+    .sidebar-footer button:hover { color: rgba(253,246,236,0.7); }
+
+    /* Sidebar overlay */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(44,33,24,0.3);
+      z-index: 199;
+    }
+    .sidebar-overlay.open { display: block; }
+
+    /* ══ MOLECULE CANVAS ══ */
+    .tree-canvas {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      padding-top: 52px;
+    }
+
+    #moleculeSvg {
+      position: absolute;
+      top: 52px; left: 0;
+      width: 100%; height: calc(100% - 52px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ══ BUBBLE NODES ══ */
+    .node {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      z-index: 10;
+      user-select: none;
+    }
+
+    .node-bubble {
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .node:hover .node-bubble { transform: scale(1.1); }
+    .node.active .node-bubble { transform: scale(1.12); }
+
+    /* Pulsing paisley glow */
+    .node-bubble::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 0deg,
+        rgba(196,120,90,0.0),
+        rgba(240,192,112,0.35),
+        rgba(212,192,216,0.25),
+        rgba(200,216,192,0.3),
+        rgba(242,196,176,0.35),
+        rgba(196,120,90,0.0)
+      );
+      animation: paisleyPulse 3.5s ease-in-out infinite;
+      z-index: -1;
+      filter: blur(3px);
+    }
+
+    @keyframes paisleyPulse {
+      0%,100% { opacity: 0.4; transform: scale(0.95) rotate(0deg); }
+      50%      { opacity: 1;   transform: scale(1.12) rotate(180deg); }
+    }
+
+    /* Floating drift */
+    .node { animation: drift 6s ease-in-out infinite; }
+    .node:nth-child(2n)   { animation-duration: 7.2s; animation-delay: -1.2s; }
+    .node:nth-child(3n)   { animation-duration: 5.8s; animation-delay: -2.4s; }
+    .node:nth-child(4n)   { animation-duration: 8.1s; animation-delay: -0.8s; }
+    .node:nth-child(5n)   { animation-duration: 6.6s; animation-delay: -3.1s; }
+
+    @keyframes drift {
+      0%,100% { margin-top: 0px; }
+      50%      { margin-top: -8px; }
+    }
+
+    .node-label {
+      margin-top: 8px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.07em;
+      color: var(--bark);
+      text-align: center;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .node-role {
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--clay);
+      opacity: 0.65;
+    }
+
+    .node-recipe-badge {
+      position: absolute;
+      top: -4px; right: -4px;
+      background: var(--saffron);
+      color: var(--bark);
+      font-size: 0.52rem;
+      font-weight: 700;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #fff;
+      z-index: 2;
+    }
+
+    /* ══ HIGHLIGHT PANEL (click 1) ══ */
+    .highlight-panel {
+      position: fixed;
+      z-index: 300;
+      background: rgba(255,255,255,0.97);
+      border-radius: 0;
+      width: 230px;
+      box-shadow: 0 8px 40px rgba(107,79,58,0.16);
+      animation: panelIn 0.2s ease;
+      border-top: 2px solid var(--clay);
+    }
+
+    /* Bracket corners on panel */
+    .highlight-panel::before,
+    .highlight-panel::after {
+      content: '';
+      position: absolute;
+      width: 10px; height: 10px;
+      border-color: var(--clay);
+      border-style: solid;
+    }
+    .highlight-panel::before { bottom: -1px; left: -1px; border-width: 0 0 1px 1px; }
+    .highlight-panel::after  { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(6px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .hp-inner { padding: 1.2rem 1.3rem; }
+
+    .hp-head {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .hp-avatar-sm {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .hp-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--bark);
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+    }
+
+    .hp-role-tag {
+      font-size: 0.58rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--clay);
+    }
+
+    .hp-recipes-preview {
+      list-style: none;
+      margin-bottom: 0.9rem;
+    }
+
+    .hp-recipes-preview li {
+      font-size: 0.76rem;
+      color: var(--ink);
+      padding: 0.22rem 0;
+      border-bottom: 1px solid rgba(107,79,58,0.05);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .hp-recipes-preview li::before {
+      content: '';
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--clay);
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+
+    .hp-empty {
+      font-size: 0.73rem;
+      font-style: italic;
+      color: var(--bark);
+      opacity: 0.35;
+      margin-bottom: 0.9rem;
+    }
+
+    .hp-note {
+      font-size: 0.63rem;
+      color: var(--clay);
+      opacity: 0.65;
+      font-style: italic;
+      margin-bottom: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .hp-cta {
+      display: block;
+      width: 100%;
+      padding: 0.65rem;
+      background: var(--bark);
+      color: var(--cream);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .hp-cta:hover { background: var(--clay); }
+
+    .hp-close {
+      position: absolute;
+      top: 0.5rem; right: 0.6rem;
+      background: none; border: none;
+      font-size: 0.85rem;
+      color: var(--bark); opacity: 0.3;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .hp-close:hover { opacity: 0.8; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem; right: 1.5rem;
+      background: var(--bark);
+      color: var(--cream);
+      padding: 0.75rem 1.3rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      z-index: 999;
+      animation: toastIn 0.28s ease;
+      box-shadow: 0 4px 20px rgba(107,79,58,0.25);
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .node { animation: none; }
+      .node-bubble::before { animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar overlay -->
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <button class="sidebar-close" onclick="closeSidebar()">✕</button>
+
+    <div class="sidebar-brand">
+      <span>Chumchi</span>
+      <small>silver spoon energy</small>
+    </div>
+
+    <nav class="sidebar-nav">
+      <span class="sidebar-section">Navigate</span>
+      <a class="sidebar-item active" href="tree.html">
+        <span class="icon">◉</span> Family Tree
+      </a>
+      <a class="sidebar-item" href="#" onclick="showFamilyList()">
+        <span class="icon">◎</span> Family List
+      </a>
+      <a class="sidebar-item" href="upload.html">
+        <span class="icon">↑</span> Upload Recipe
+      </a>
+
+      <span class="sidebar-section">My Recipes</span>
+      <a class="sidebar-item" href="recipe.html?member=meher">
+        <span class="icon">☽</span> Meher
+      </a>
+      <a class="sidebar-item" href="recipe.html?member=viq">
+        <span class="icon">☽</span> Viq
+      </a>
+
+      <span class="sidebar-section">Admin</span>
+      <a class="sidebar-item" href="../admin/family-admin.html">
+        <span class="icon">⊡</span> Manage Tree
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- Top nav -->
+  <nav class="top-nav">
+    <button class="nav-hamburger" id="hamburger" onclick="openSidebar()">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="tree.html" class="nav-brand">
+      <svg viewBox="0 0 24 60" fill="none"><ellipse cx="12" cy="10" rx="7" ry="9" stroke="#6B4F3A" stroke-width="1.3"/><line x1="12" y1="19" x2="12" y2="58" stroke="#6B4F3A" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Chumchi
+    </a>
+    <span class="nav-tree-label">The Rafiq Tree</span>
+  </nav>
+
+  <!-- SVG connectors -->
+  <svg id="moleculeSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+
+  <!-- Tree canvas -->
+  <div class="tree-canvas" id="treeCanvas"></div>
+
+  <script src="../assets/app.js"></script>
+  <script>
+
+    // ── Auth ──
+    if (sessionStorage.getItem('chumchi_site') !== 'true') window.location.href = '../index.html';
+    const sess = JSON.parse(sessionStorage.getItem('chumchi_session') || 'null');
+    if (!sess) window.location.href = '../platform/login.html';
+
+    // ── Sidebar ──
+    function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('open'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
+    function logout()       { sessionStorage.clear(); window.location.href = '../index.html'; }
+
+    function showFamilyList() {
+      closeSidebar();
+      showToast('Family List — coming soon');
+    }
+
+    // ── Robot avatar generator ──
+    const AVATAR_PALETTES = [
+      { bg: '#F2C4B0', face: '#6B4F3A', accent: '#F0C070' },
+      { bg: '#C8D8C0', face: '#3A5A3A', accent: '#F2C4B0' },
+      { bg: '#D4C0D8', face: '#5A3A6B', accent: '#C8D8C0' },
+      { bg: '#F0C070', face: '#6B4F3A', accent: '#D4C0D8' },
+      { bg: '#FDF6EC', face: '#6B4F3A', accent: '#C4785A' },
+      { bg: '#C4785A', face: '#FDF6EC', accent: '#F0C070' },
+      { bg: '#B8D4C8', face: '#2C4A3A', accent: '#F2C4B0' },
+    ];
+
+    // Each person gets a deterministic but unique robot face
+    function makeAvatar(memberId, size, paletteIdx) {
+      const p = AVATAR_PALETTES[paletteIdx % AVATAR_PALETTES.length];
+      const seed = memberId.split('').reduce((a,c) => a + c.charCodeAt(0), 0);
+      const r = size / 2;
+
+      // Eye shapes — varied
+      const eyeShapes = [
+        `<circle cx="${size*0.35}" cy="${size*0.42}" r="${size*0.06}" fill="${p.face}"/>
+         <circle cx="${size*0.65}" cy="${size*0.42}" r="${size*0.06}" fill="${p.face}"/>`,
+        `<rect x="${size*0.28}" y="${size*0.38}" width="${size*0.13}" height="${size*0.09}" rx="2" fill="${p.face}"/>
+         <rect x="${size*0.59}" y="${size*0.38}" width="${size*0.13}" height="${size*0.09}" rx="2" fill="${p.face}"/>`,
+        `<ellipse cx="${size*0.35}" cy="${size*0.42}" rx="${size*0.07}" ry="${size*0.05}" fill="${p.face}"/>
+         <ellipse cx="${size*0.65}" cy="${size*0.42}" rx="${size*0.07}" ry="${size*0.05}" fill="${p.face}"/>`,
+      ];
+
+      // Mouth shapes — varied
+      const mouths = [
+        `<path d="M${size*0.35} ${size*0.62} Q${size*0.5} ${size*0.72} ${size*0.65} ${size*0.62}" stroke="${p.face}" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+        `<rect x="${size*0.38}" y="${size*0.60}" width="${size*0.24}" height="${size*0.08}" rx="3" fill="${p.face}"/>`,
+        `<line x1="${size*0.36}" y1="${size*0.63}" x2="${size*0.64}" y2="${size*0.63}" stroke="${p.face}" stroke-width="2" stroke-linecap="round"/>`,
+      ];
+
+      // Antenna / hair features
+      const hats = [
+        `<circle cx="${size*0.5}" cy="${size*0.08}" r="${size*0.06}" fill="${p.accent}"/><line x1="${size*0.5}" y1="${size*0.14}" x2="${size*0.5}" y2="${size*0.22}" stroke="${p.accent}" stroke-width="2"/>`,
+        `<rect x="${size*0.35}" y="${size*0.06}" width="${size*0.3}" height="${size*0.1}" rx="2" fill="${p.accent}"/>`,
+        `<polygon points="${size*0.5},${size*0.04} ${size*0.42},${size*0.16} ${size*0.58},${size*0.16}" fill="${p.accent}"/>`,
+        `<circle cx="${size*0.5}" cy="${size*0.05}" r="${size*0.07}" fill="${p.accent}" opacity="0.7"/>
+         <circle cx="${size*0.35}" cy="${size*0.1}" r="${size*0.04}" fill="${p.accent}" opacity="0.5"/>
+         <circle cx="${size*0.65}" cy="${size*0.1}" r="${size*0.04}" fill="${p.accent}" opacity="0.5"/>`,
+      ];
+
+      const eyeIdx  = seed % eyeShapes.length;
+      const mouthIdx = (seed + 1) % mouths.length;
+      const hatIdx   = (seed + 2) % hats.length;
+
+      return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="${r}" cy="${r}" r="${r}" fill="${p.bg}"/>
+        ${hats[hatIdx]}
+        ${eyeShapes[eyeIdx]}
+        ${mouths[mouthIdx]}
+        <circle cx="${size*0.35}" cy="${size*0.42}" r="${size*0.025}" fill="${p.accent}" opacity="0.6"/>
+        <circle cx="${size*0.65}" cy="${size*0.42}" r="${size*0.025}" fill="${p.accent}" opacity="0.6"/>
+      </svg>`;
+    }
+
+    // ── Node layout (molecule positions) ──
+    // Positions as % of canvas width/height
+    // Designed to look like a molecule/node graph
+    const NODE_POSITIONS = {
+      // Gen 0 — grandparents (top)
+      rafiq_khan: { x: 28, y: 14 },
+      mukhadis:   { x: 38, y: 10 },
+      abdul_hai:  { x: 62, y: 10 },
+      rabiyah:    { x: 72, y: 14 },
+      // Gen 1 — parents & siblings
+      viq:        { x: 20, y: 34 },
+      meher:      { x: 38, y: 36 },
+      arshad:     { x: 58, y: 36 },
+      azhar:      { x: 72, y: 28 },
+      athar:      { x: 80, y: 36 },
+      ruksana:    { x: 88, y: 44 },
+      // Gen 2 — our generation
+      haana:      { x: 30, y: 58 },
+      saara:      { x: 45, y: 62 },
+      aalia:      { x: 58, y: 60 },
+      farhan:     { x: 54, y: 72 },
+      kamran:     { x: 72, y: 55 },
+      zuhair:     { x: 80, y: 62 },
+      maha:       { x: 88, y: 55 },
+      // Gen 3
+      izza:       { x: 46, y: 82 },
+    };
+
+    const NODE_SIZES = {
+      rafiq_khan: 64, mukhadis: 64, abdul_hai: 64, rabiyah: 64,
+      meher: 82, arshad: 82,
+      viq: 58, azhar: 54, athar: 58, ruksana: 54,
+      haana: 72, saara: 68, aalia: 68, farhan: 54,
+      kamran: 50, zuhair: 50, maha: 50,
+      izza: 48,
+    };
+
+    const CONNECTIONS = [
+      ['rafiq_khan','mukhadis'],['rafiq_khan','meher'],['rafiq_khan','viq'],
+      ['mukhadis','meher'],['mukhadis','viq'],
+      ['abdul_hai','rabiyah'],['abdul_hai','arshad'],['abdul_hai','azhar'],['abdul_hai','athar'],
+      ['rabiyah','arshad'],
+      ['meher','arshad'],
+      ['meher','haana'],['meher','saara'],['meher','aalia'],
+      ['arshad','haana'],['arshad','saara'],['arshad','aalia'],
+      ['athar','ruksana'],['athar','kamran'],['athar','zuhair'],['athar','maha'],
+      ['saara','farhan'],['saara','izza'],['farhan','izza'],
+    ];
+
+    const MEMBERS = TREE.rafiq.members;
+    const FAMILY_RECIPES = RECIPES.rafiq;
+
+    function getRecipes(id) { return FAMILY_RECIPES.filter(r => r.assignedTo === id); }
+
+    // ── Render nodes ──
+    const canvas = document.getElementById('treeCanvas');
+    const svgEl  = document.getElementById('moleculeSvg');
+    const nodeEls = {};
+    let paletteIdx = 0;
+
+    Object.entries(NODE_POSITIONS).forEach(([id, pos]) => {
+      const member  = MEMBERS[id];
+      if (!member) return;
+
+      const size    = NODE_SIZES[id] || 60;
+      const recipes = getRecipes(id);
+      const isMe    = id === 'haana';
+
+      const node = document.createElement('div');
+      node.className = 'node' + (isMe ? ' active' : '');
+      node.id = 'node-' + id;
+      node.style.left = pos.x + '%';
+      node.style.top  = (pos.y + 6) + '%'; // offset for nav
+      node.onclick = (e) => { e.stopPropagation(); showPanel(id, node); };
+
+      node.innerHTML = `
+        <div class="node-bubble" style="width:${size}px;height:${size}px;${isMe ? 'box-shadow:0 0 0 3px var(--clay);' : ''}">
+          ${makeAvatar(id, size, paletteIdx)}
+          ${recipes.length > 0 ? `<div class="node-recipe-badge">${recipes.length}</div>` : ''}
+        </div>
+        <div class="node-label">
+          ${member.name}
+          ${isMe ? '<span style="color:var(--clay);font-size:0.65rem;"> · me</span>' : ''}
+        </div>
+        <div class="node-role">${member.role}</div>
+      `;
+
+      canvas.appendChild(node);
+      nodeEls[id] = node;
+      paletteIdx++;
+    });
+
+    // ── Draw SVG connectors ──
+    function drawConnectors() {
+      svgEl.innerHTML = '';
+      const W = canvas.offsetWidth;
+      const H = canvas.offsetHeight || window.innerHeight;
+
+      CONNECTIONS.forEach(([a, b]) => {
+        const na = document.getElementById('node-' + a);
+        const nb = document.getElementById('node-' + b);
+        if (!na || !nb) return;
+
+        const ra = na.getBoundingClientRect();
+        const rb = nb.getBoundingClientRect();
+        const ca = canvas.getBoundingClientRect();
+
+        const x1 = ra.left + ra.width/2  - ca.left;
+        const y1 = ra.top  + ra.height/2 - ca.top;
+        const x2 = rb.left + rb.width/2  - ca.left;
+        const y2 = rb.top  + rb.height/2 - ca.top;
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+        line.setAttribute('stroke', 'rgba(196,120,90,0.18)');
+        line.setAttribute('stroke-width', '1.2');
+        line.setAttribute('stroke-dasharray', '3 5');
+        svgEl.appendChild(line);
+      });
+    }
+
+    setTimeout(drawConnectors, 100);
+    window.addEventListener('resize', drawConnectors);
+
+    // ── Highlight panel ──
+    let openPanel = null;
+
+    function showPanel(memberId, nodeEl) {
+      // Close existing
+      if (openPanel) { openPanel.remove(); openPanel = null; }
+      document.querySelectorAll('.node.active').forEach(n => {
+        if (n.id !== 'node-haana') n.classList.remove('active');
+      });
+
+      nodeEl.classList.add('active');
+
+      const member  = MEMBERS[memberId];
+      const recipes = getRecipes(memberId);
+
+      const panel = document.createElement('div');
+      panel.className = 'highlight-panel';
+
+      const avatarSvg = makeAvatar(memberId, 36, Array.from(canvas.querySelectorAll('.node')).findIndex(n => n.id === 'node-' + memberId));
+
+      let recipeHTML = '';
+      if (recipes.length > 0) {
+        recipeHTML = `
+          <ul class="hp-recipes-preview">
+            ${recipes.slice(0,4).map(r => `<li>${r.title}</li>`).join('')}
+            ${recipes.length > 4 ? `<li style="opacity:0.4;font-style:italic;">+${recipes.length-4} more…</li>` : ''}
+          </ul>
+          <p class="hp-note">
+            ${MEMBERS[recipes[0].uploadedBy]?.name || 'Someone'} added ${recipes.length} recipe${recipes.length>1?'s':''} · ${formatDate(recipes[0].uploadDate)}
+          </p>`;
+      } else {
+        recipeHTML = `<p class="hp-empty">No recipes yet.</p>`;
+      }
+
+      panel.innerHTML = `
+        <button class="hp-close" onclick="closePanel()">✕</button>
+        <div class="hp-inner">
+          <div class="hp-head">
+            ${avatarSvg}
+            <div>
+              <div class="hp-name">${member.name}</div>
+              <div class="hp-role-tag">${member.role}</div>
+            </div>
+          </div>
+          ${recipeHTML}
+          <a class="hp-cta" href="recipe.html?member=${memberId}">
+            Open ${member.name}'s Recipes →
+          </a>
+        </div>
+      `;
+
+      document.body.appendChild(panel);
+      openPanel = panel;
+
+      // Position near node
+      const rect = nodeEl.getBoundingClientRect();
+      let left = rect.right + 12;
+      let top  = rect.top;
+      if (left + 235 > window.innerWidth - 10) left = rect.left - 242;
+      if (left < 8) left = 8;
+      if (top + 320 > window.innerHeight - 10) top = window.innerHeight - 325;
+      panel.style.left = left + 'px';
+      panel.style.top  = top + 'px';
+    }
+
+    function closePanel() {
+      if (openPanel) { openPanel.remove(); openPanel = null; }
+      document.querySelectorAll('.node.active').forEach(n => {
+        if (n.id !== 'node-haana') n.classList.remove('active');
+      });
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.node') && !e.target.closest('.highlight-panel')) closePanel();
+    });
+
+    function formatDate(d) {
+      return new Date(d).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    }
+
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast'; t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3200);
+    }
+  </script>
+</body>
+</html>
