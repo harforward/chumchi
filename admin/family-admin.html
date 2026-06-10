@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chumchi — Family Admin</title>
+  <link rel="stylesheet" href="../assets/style.css"/>
+  <style>
+    body { background: var(--cream); }
+
+    .page-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.2rem 5rem;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--bark);
+    }
+
+    .page-header p {
+      font-family: var(--font-display);
+      font-style: italic;
+      color: var(--clay);
+      font-size: 0.82rem;
+      opacity: 0.7;
+      margin-top: 0.2rem;
+    }
+
+    /* Members table */
+    .section-title {
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.45;
+      margin-bottom: 0.8rem;
+    }
+
+    .members-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--white);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 2rem;
+    }
+
+    .members-table th {
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--clay);
+      opacity: 0.7;
+      padding: 0.8rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(107,79,58,0.08);
+      background: var(--cream);
+    }
+
+    .members-table td {
+      font-size: 0.82rem;
+      color: var(--ink);
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid rgba(107,79,58,0.05);
+      vertical-align: middle;
+    }
+
+    .members-table tr:last-child td { border-bottom: none; }
+    .members-table tr:hover td { background: rgba(253,246,236,0.6); }
+
+    .member-dot {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--bark);
+      margin-right: 0.5rem;
+      vertical-align: middle;
+    }
+
+    .recipe-badge {
+      display: inline-block;
+      padding: 0.18rem 0.55rem;
+      border-radius: 12px;
+      background: var(--saffron);
+      color: var(--bark);
+      font-size: 0.68rem;
+      font-weight: 600;
+    }
+
+    .action-cell {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .tbl-btn {
+      padding: 0.3rem 0.7rem;
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-weight: 500;
+      transition: var(--transition);
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .tbl-btn-view   { background: var(--sage);   color: var(--bark); }
+    .tbl-btn-upload { background: var(--blush);  color: var(--bark); }
+
+    .tbl-btn-view:hover   { background: var(--saffron); }
+    .tbl-btn-upload:hover { background: var(--saffron); }
+
+    /* Credentials card */
+    .cred-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 2rem;
+    }
+
+    .cred-card h3 {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+
+    .cred-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(107,79,58,0.06);
+      flex-wrap: wrap;
+    }
+
+    .cred-row:last-child { border-bottom: none; }
+
+    .cred-key {
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.45;
+      min-width: 120px;
+    }
+
+    .cred-val {
+      font-size: 0.85rem;
+      color: var(--ink);
+      font-family: monospace;
+      background: var(--cream);
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+    }
+
+    /* Add member */
+    .add-member-form {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 2rem;
+      display: none;
+    }
+
+    .add-member-form h3 {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+
+    .form-grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 600px) { .form-grid-3 { grid-template-columns: 1fr; } }
+
+    .form-group label {
+      display: block;
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.5;
+      margin-bottom: 0.35rem;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="top-nav">
+    <a href="dashboard.html" class="nav-brand">
+      <img src="../assets/spoon.svg" style="width:14px;opacity:0.7;" alt=""/> Chumchi
+    </a>
+    <ul class="nav-links">
+      <li><a href="../family/tree.html">View Tree</a></li>
+      <li><a href="#" onclick="logout()">Sign Out</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-wrap">
+
+    <div class="page-header">
+      <div>
+        <h1 id="familyTitle">Rafiq Family Admin</h1>
+        <p>Manage members, recipes, and access credentials</p>
+      </div>
+      <button class="btn btn-primary" onclick="toggleAddMember()">+ Add Member</button>
+    </div>
+
+    <!-- Credentials -->
+    <p class="section-title">Family Access Credentials</p>
+    <div class="cred-card">
+      <h3>Login Details</h3>
+      <div class="cred-row">
+        <span class="cred-key">Family Admin User</span>
+        <span class="cred-val" id="cred-admin-user">rafiq-admin</span>
+      </div>
+      <div class="cred-row">
+        <span class="cred-key">Admin Password</span>
+        <span class="cred-val">rafiq2026</span>
+      </div>
+      <div class="cred-row">
+        <span class="cred-key">Member Family Name</span>
+        <span class="cred-val">rafiq</span>
+      </div>
+      <div class="cred-row">
+        <span class="cred-key">Member Password</span>
+        <span class="cred-val">Rafiq2026</span>
+      </div>
+    </div>
+
+    <!-- Add member form -->
+    <div class="add-member-form" id="addMemberForm">
+      <h3>Add Family Member</h3>
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" class="input-field" id="nm-name" placeholder="Name"/>
+        </div>
+        <div class="form-group">
+          <label>Role / Relation</label>
+          <input type="text" class="input-field" id="nm-role" placeholder="e.g. Aunt"/>
+        </div>
+        <div class="form-group">
+          <label>Generation</label>
+          <select class="input-field" id="nm-gen">
+            <option value="0">Grandparents</option>
+            <option value="1">Parents</option>
+            <option value="2" selected>Our Generation</option>
+            <option value="3">Next Gen</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.6rem;">
+        <button class="btn btn-ghost" onclick="toggleAddMember()">Cancel</button>
+        <button class="btn btn-primary" onclick="addMember()">Add to Tree</button>
+      </div>
+    </div>
+
+    <!-- Members table -->
+    <p class="section-title">Family Members</p>
+    <table class="members-table">
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Role</th>
+          <th>Generation</th>
+          <th>Recipes</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="membersTable"></tbody>
+    </table>
+
+  </div>
+
+  <script src="../assets/app.js"></script>
+  <script>
+    if (sessionStorage.getItem('chumchi_site') !== 'true') window.location.href = '../index.html';
+    const sess = JSON.parse(sessionStorage.getItem('chumchi_session') || 'null');
+    if (!sess || (sess.role !== 'admin' && sess.role !== 'superadmin')) {
+      window.location.href = '../platform/login.html';
+    }
+
+    const MEMBERS  = TREE.rafiq.members;
+    const genNames = ['Grandparents','Parents / Their Gen','Our Generation','Next Generation'];
+    const bubbleColors = ['#F2C4B0','#C8D8C0','#F0C070','#D4C0D8','#FDF6EC'];
+    let memberList = Object.values(MEMBERS);
+
+    function renderTable() {
+      document.getElementById('membersTable').innerHTML = memberList.map((m, i) => {
+        const recipes = RECIPES.rafiq.filter(r => r.assignedTo === m.id);
+        const col = bubbleColors[i % bubbleColors.length];
+        return `<tr>
+          <td>
+            <div class="member-dot" style="background:${col};">${m.name[0]}</div>
+            <strong>${m.name}</strong>
+            ${m.maidenName ? `<span style="font-size:0.68rem;opacity:0.45;"> née ${m.maidenName}</span>` : ''}
+          </td>
+          <td>${m.role}</td>
+          <td>${genNames[m.generation] || 'Gen ' + m.generation}</td>
+          <td>${recipes.length > 0
+            ? `<span class="recipe-badge">${recipes.length}</span>`
+            : '<span style="opacity:0.3;font-style:italic;font-size:0.75rem;">none</span>'
+          }</td>
+          <td>
+            <div class="action-cell">
+              <a class="tbl-btn tbl-btn-view" href="../family/recipe.html?member=${m.id}">Recipes</a>
+              <a class="tbl-btn tbl-btn-upload" href="../family/upload.html?member=${m.id}">+ Upload</a>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function toggleAddMember() {
+      const f = document.getElementById('addMemberForm');
+      f.style.display = f.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function addMember() {
+      const name = document.getElementById('nm-name').value.trim();
+      const role = document.getElementById('nm-role').value.trim();
+      const gen  = parseInt(document.getElementById('nm-gen').value);
+
+      if (!name || !role) { showToast('Please fill in name and role.'); return; }
+
+      const id = name.toLowerCase().replace(/\s+/g,'_') + '_' + Date.now();
+      memberList.push({ id, name, role, generation: gen, color: 'bubble-cream' });
+      showToast(`${name} added to the tree.`);
+      toggleAddMember();
+      renderTable();
+    }
+
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    }
+
+    function logout() {
+      sessionStorage.clear();
+      window.location.href = '../index.html';
+    }
+
+    renderTable();
+  </script>
+</body>
+</html>
