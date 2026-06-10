@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chumchi</title>
+  <link rel="stylesheet" href="assets/style.css"/>
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--cream);
+      overflow: hidden;
+    }
+
+    /* Ambient background blobs */
+    .bg-blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.28;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .blob-1 { width: 480px; height: 480px; background: var(--blush);   top: -120px; right: -80px; }
+    .blob-2 { width: 360px; height: 360px; background: var(--sage);    bottom: -80px; left: -60px; }
+    .blob-3 { width: 280px; height: 280px; background: var(--saffron); bottom: 40px; right: 80px; }
+    .blob-4 { width: 200px; height: 200px; background: var(--lilac);   top: 60px; left: 100px; }
+
+    .landing-wrap {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+      padding: 3rem 2.5rem;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(16px);
+      border-radius: 24px;
+      box-shadow: 0 8px 48px rgba(107,79,58,0.10);
+      border: 1px solid rgba(255,255,255,0.7);
+      animation: fadeUp 0.6s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .spoon-wrap {
+      margin-bottom: 0.6rem;
+    }
+
+    .spoon-icon {
+      width: 22px;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 0.5rem;
+      opacity: 0.7;
+    }
+
+    .site-title {
+      font-family: var(--font-display);
+      font-size: clamp(3.2rem, 10vw, 4.8rem);
+      font-weight: 300;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--bark);
+      line-height: 1;
+      display: inline-block;
+    }
+
+    .site-subtitle {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 0.95rem;
+      letter-spacing: 0.16em;
+      color: var(--clay);
+      margin-top: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .access-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.5;
+      margin-bottom: 0.6rem;
+    }
+
+    .pwd-row {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .pwd-row input {
+      flex: 1;
+    }
+
+    .error-msg {
+      color: var(--clay);
+      font-size: 0.75rem;
+      margin-top: 0.6rem;
+      letter-spacing: 0.05em;
+      font-style: italic;
+      min-height: 1rem;
+    }
+
+    .footer-note {
+      position: fixed;
+      bottom: 1.5rem;
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.3;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+  <div class="bg-blob blob-4"></div>
+
+  <div class="landing-wrap">
+
+    <div class="spoon-wrap">
+      <span class="site-title">
+        <img src="assets/spoon.svg" class="spoon-icon" alt="spoon"/>Chumchi
+      </span>
+    </div>
+
+    <div class="site-subtitle">silver spoon energy</div>
+
+    <div class="divider"></div>
+
+    <p class="access-label">Access Here</p>
+
+    <div class="pwd-row">
+      <input
+        type="password"
+        class="input-field"
+        id="sitePassword"
+        placeholder="enter password"
+        autocomplete="off"
+        onkeydown="if(event.key==='Enter') checkSitePwd()"
+      />
+      <button class="btn btn-primary" onclick="checkSitePwd()">Enter</button>
+    </div>
+
+    <p class="error-msg" id="errorMsg"></p>
+
+  </div>
+
+  <p class="footer-note">Family Recipes · Preserved</p>
+
+  <script>
+    // If already authenticated, go straight to login
+    if (sessionStorage.getItem('chumchi_site') === 'true') {
+      window.location.href = 'platform/login.html';
+    }
+
+    function checkSitePwd() {
+      const val = document.getElementById('sitePassword').value.trim();
+      const err = document.getElementById('errorMsg');
+      if (val === 'tree2026') {
+        sessionStorage.setItem('chumchi_site', 'true');
+        window.location.href = 'platform/login.html';
+      } else {
+        err.textContent = 'Incorrect password. Try again.';
+        document.getElementById('sitePassword').value = '';
+        document.getElementById('sitePassword').focus();
+      }
+    }
+  </script>
+</body>
+</html>
