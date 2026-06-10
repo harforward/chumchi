@@ -1,0 +1,463 @@
+/* ============================================
+   CHUMCHI — Global Design System
+   Sunrise India Air · Pastel · Heirloom
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap');
+
+/* --- Tokens --- */
+:root {
+  --cream:   #FDF6EC;
+  --blush:   #F2C4B0;
+  --sage:    #C8D8C0;
+  --saffron: #F0C070;
+  --lilac:   #D4C0D8;
+  --clay:    #C4785A;
+  --bark:    #6B4F3A;
+  --ink:     #2C2118;
+  --white:   #FFFFFF;
+  --mist:    rgba(253,246,236,0.85);
+
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body:    'Inter', sans-serif;
+
+  --radius-bubble: 50%;
+  --radius-card:   16px;
+  --radius-input:  10px;
+
+  --shadow-soft: 0 4px 24px rgba(107,79,58,0.10);
+  --shadow-hover: 0 8px 36px rgba(107,79,58,0.18);
+
+  --transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- Reset --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Typography --- */
+.display {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.display-xl {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 300;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.subtitle {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  letter-spacing: 0.12em;
+  color: var(--clay);
+}
+
+.label {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bark);
+  opacity: 0.7;
+}
+
+/* --- Spoon brand mark --- */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+.brand-spoon {
+  width: 28px;
+  opacity: 0.75;
+}
+
+/* --- Buttons --- */
+.btn {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 0.85rem 2.2rem;
+  border: none;
+  border-radius: var(--radius-input);
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary {
+  background: var(--bark);
+  color: var(--cream);
+}
+.btn-primary:hover {
+  background: var(--clay);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-hover);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--bark);
+  border: 1.5px solid var(--bark);
+}
+.btn-ghost:hover {
+  background: var(--bark);
+  color: var(--cream);
+}
+
+.btn-soft {
+  background: var(--blush);
+  color: var(--bark);
+}
+.btn-soft:hover {
+  background: var(--saffron);
+}
+
+/* --- Inputs --- */
+.input-field {
+  width: 100%;
+  padding: 0.85rem 1.2rem;
+  border: 1.5px solid rgba(107,79,58,0.2);
+  border-radius: var(--radius-input);
+  background: var(--white);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--ink);
+  transition: var(--transition);
+  outline: none;
+}
+.input-field:focus {
+  border-color: var(--clay);
+  box-shadow: 0 0 0 3px rgba(196,120,90,0.12);
+}
+.input-field::placeholder {
+  color: var(--bark);
+  opacity: 0.4;
+  font-style: italic;
+}
+
+select.input-field {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B4F3A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1.2rem center;
+  padding-right: 2.5rem;
+}
+
+/* --- Cards --- */
+.card {
+  background: var(--white);
+  border-radius: var(--radius-card);
+  padding: 2rem;
+  box-shadow: var(--shadow-soft);
+  transition: var(--transition);
+}
+.card:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+/* --- Divider --- */
+.divider {
+  width: 48px;
+  height: 1px;
+  background: var(--clay);
+  opacity: 0.35;
+  margin: 1.2rem auto;
+}
+
+/* --- Bubble (tree node) --- */
+.bubble {
+  border-radius: var(--radius-bubble);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  text-align: center;
+  border: 2px solid transparent;
+  user-select: none;
+}
+
+.bubble:hover {
+  transform: scale(1.08);
+  box-shadow: var(--shadow-hover);
+}
+
+.bubble.active {
+  border-color: var(--clay);
+  box-shadow: 0 0 0 4px rgba(196,120,90,0.15);
+}
+
+.bubble-name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  color: var(--bark);
+  line-height: 1.2;
+}
+
+.bubble-role {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--clay);
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+.bubble-count {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  background: var(--saffron);
+  color: var(--bark);
+  font-size: 0.55rem;
+  font-weight: 600;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--cream);
+}
+
+/* Bubble size variants */
+.bubble-lg { width: 110px; height: 110px; }
+.bubble-md { width: 88px;  height: 88px;  }
+.bubble-sm { width: 70px;  height: 70px;  }
+.bubble-xs { width: 56px;  height: 56px;  }
+
+/* Bubble color variants */
+.bubble-cream   { background: var(--cream);   border-color: rgba(107,79,58,0.15); }
+.bubble-blush   { background: var(--blush);   }
+.bubble-sage    { background: var(--sage);    }
+.bubble-saffron { background: var(--saffron); }
+.bubble-lilac   { background: var(--lilac);   }
+
+/* --- Connector lines (SVG) --- */
+.tree-svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.connector {
+  stroke: var(--clay);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 4;
+  opacity: 0.4;
+  fill: none;
+}
+
+/* --- Highlight panel (bubble click preview) --- */
+.highlight-panel {
+  position: fixed;
+  z-index: 100;
+  background: var(--white);
+  border-radius: var(--radius-card);
+  padding: 1.6rem 1.8rem;
+  box-shadow: 0 12px 48px rgba(107,79,58,0.18);
+  min-width: 220px;
+  max-width: 280px;
+  border-top: 3px solid var(--clay);
+  animation: panelIn 0.22s ease;
+  pointer-events: all;
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.highlight-panel h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--bark);
+  letter-spacing: 0.06em;
+  margin-bottom: 0.2rem;
+}
+
+.highlight-panel .hp-role {
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--clay);
+  margin-bottom: 0.8rem;
+}
+
+.highlight-panel .hp-recipes {
+  font-size: 0.8rem;
+  color: var(--ink);
+  opacity: 0.7;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.highlight-panel .hp-note {
+  font-size: 0.7rem;
+  color: var(--clay);
+  opacity: 0.8;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.highlight-panel .hp-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* --- Recipe card --- */
+.recipe-tag {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+  background: var(--sage);
+  color: var(--bark);
+  margin: 0.2rem;
+}
+
+/* --- Upload zone --- */
+.upload-zone {
+  border: 2px dashed rgba(196,120,90,0.35);
+  border-radius: var(--radius-card);
+  padding: 3rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  background: rgba(253,246,236,0.6);
+}
+.upload-zone:hover,
+.upload-zone.dragover {
+  border-color: var(--clay);
+  background: rgba(242,196,176,0.15);
+}
+
+/* --- Nav --- */
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 2rem;
+  background: var(--mist);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(107,79,58,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.nav-brand {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 300;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bark);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  list-style: none;
+}
+
+.nav-links a {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bark);
+  text-decoration: none;
+  opacity: 0.65;
+  transition: var(--transition);
+}
+.nav-links a:hover { opacity: 1; }
+
+/* --- Toast --- */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--bark);
+  color: var(--cream);
+  padding: 0.9rem 1.5rem;
+  border-radius: var(--radius-input);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  z-index: 999;
+  animation: toastIn 0.3s ease;
+  box-shadow: var(--shadow-hover);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Floating animation for bubbles --- */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+.float-1 { animation: float 5.0s ease-in-out infinite; }
+.float-2 { animation: float 6.2s ease-in-out infinite 0.8s; }
+.float-3 { animation: float 4.8s ease-in-out infinite 1.4s; }
+.float-4 { animation: float 5.6s ease-in-out infinite 0.3s; }
+.float-5 { animation: float 6.8s ease-in-out infinite 1.1s; }
+.float-6 { animation: float 5.3s ease-in-out infinite 2.0s; }
+.float-7 { animation: float 4.5s ease-in-out infinite 0.6s; }
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .display-xl { font-size: 2.8rem; }
+  .top-nav { padding: 1rem; }
+  .card { padding: 1.4rem; }
+  .highlight-panel { min-width: 180px; max-width: 240px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float-1, .float-2, .float-3,
+  .float-4, .float-5, .float-6, .float-7 { animation: none; }
+  * { transition-duration: 0.01ms !important; }
+}

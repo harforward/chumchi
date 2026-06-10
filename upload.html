@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chumchi — Upload Recipe</title>
+  <link rel="stylesheet" href="../assets/style.css"/>
+  <style>
+    body { background: var(--cream); }
+
+    .page-wrap {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 2rem 1.2rem 5rem;
+    }
+
+    .page-title {
+      margin-bottom: 2rem;
+    }
+
+    .page-title h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--bark);
+    }
+
+    .page-title p {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 0.85rem;
+      color: var(--clay);
+      margin-top: 0.3rem;
+      opacity: 0.75;
+    }
+
+    .upload-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 1.5rem;
+    }
+
+    .section-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.5;
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed rgba(196,120,90,0.3);
+      border-radius: 14px;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      background: rgba(253,246,236,0.5);
+      margin-bottom: 1.5rem;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      border-color: var(--clay);
+      background: rgba(242,196,176,0.12);
+    }
+
+    .upload-zone input { display: none; }
+
+    .upload-icon {
+      font-size: 2rem;
+      margin-bottom: 0.6rem;
+      opacity: 0.5;
+    }
+
+    .upload-zone p {
+      font-size: 0.8rem;
+      color: var(--bark);
+      opacity: 0.55;
+      margin-bottom: 0.3rem;
+    }
+
+    .upload-zone .hint {
+      font-size: 0.65rem;
+      opacity: 0.4;
+      letter-spacing: 0.08em;
+    }
+
+    /* Preview */
+    .preview-strip {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .preview-thumb {
+      width: 72px; height: 72px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 2px solid var(--cream);
+      box-shadow: var(--shadow-soft);
+    }
+
+    /* AI status */
+    .ai-status {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.8rem 1rem;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      color: var(--bark);
+      margin: 1.2rem 0;
+      transition: var(--transition);
+    }
+
+    .ai-status.idle    { background: rgba(200,216,192,0.25); }
+    .ai-status.loading { background: rgba(240,192,112,0.25); }
+    .ai-status.done    { background: rgba(200,216,192,0.4);  }
+    .ai-status.error   { background: rgba(242,196,176,0.4);  }
+
+    .ai-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--sage);
+      flex-shrink: 0;
+    }
+
+    .ai-status.loading .ai-dot {
+      background: var(--saffron);
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    .ai-status.done  .ai-dot { background: var(--sage); }
+    .ai-status.error .ai-dot { background: var(--blush); }
+
+    /* Parsed result */
+    .parsed-section { margin-bottom: 1.2rem; }
+
+    .parsed-section label {
+      display: block;
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.5;
+      margin-bottom: 0.4rem;
+    }
+
+    textarea.input-field {
+      resize: vertical;
+      min-height: 100px;
+      line-height: 1.6;
+      font-size: 0.85rem;
+    }
+
+    .tag-input-wrap {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      padding: 0.6rem;
+      border: 1.5px solid rgba(107,79,58,0.2);
+      border-radius: var(--radius-input);
+      background: var(--white);
+      min-height: 42px;
+      align-items: center;
+      cursor: text;
+    }
+
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      background: var(--sage);
+      font-size: 0.7rem;
+      color: var(--bark);
+      font-weight: 500;
+    }
+
+    .tag-chip button {
+      background: none; border: none;
+      cursor: pointer; font-size: 0.75rem;
+      color: var(--bark); opacity: 0.5;
+      padding: 0; line-height: 1;
+    }
+
+    .tag-chip button:hover { opacity: 1; }
+
+    .tag-input-wrap input {
+      border: none; outline: none;
+      font-size: 0.78rem;
+      color: var(--ink);
+      font-family: var(--font-body);
+      flex: 1;
+      min-width: 80px;
+      background: transparent;
+    }
+
+    /* Assign to */
+    .assign-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 500px) { .assign-row { grid-template-columns: 1fr; } }
+
+    /* Action row */
+    .action-row {
+      display: flex;
+      gap: 0.8rem;
+      margin-top: 1.5rem;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.4;
+      text-decoration: none;
+      margin-bottom: 1.5rem;
+      transition: var(--transition);
+    }
+    .back-link:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+
+  <nav class="top-nav">
+    <a href="tree.html" class="nav-brand">
+      <img src="../assets/spoon.svg" style="width:14px;opacity:0.7;" alt=""/> Chumchi
+    </a>
+    <ul class="nav-links">
+      <li><a href="tree.html">Tree</a></li>
+      <li><a href="#" onclick="logout()">Sign Out</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-wrap">
+
+    <a href="tree.html" class="back-link">← Back to Tree</a>
+
+    <div class="page-title">
+      <h1>Upload a Recipe</h1>
+      <p>Photograph a handwritten card, scan, or note — we'll do the rest.</p>
+    </div>
+
+    <!-- Step 1: Upload -->
+    <div class="upload-card">
+      <span class="section-label">Step 1 — Photo or Scan</span>
+
+      <div class="upload-zone" id="uploadZone"
+           ondragover="handleDragOver(event)"
+           ondragleave="handleDragLeave(event)"
+           ondrop="handleDrop(event)"
+           onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept="image/*,application/pdf"
+               multiple onchange="handleFiles(this.files)"/>
+        <div class="upload-icon">📄</div>
+        <p>Drop your recipe scan here, or tap to browse</p>
+        <p class="hint">JPG, PNG, PDF · Multiple pages OK</p>
+      </div>
+
+      <div class="preview-strip" id="previewStrip"></div>
+
+      <!-- AI parse button -->
+      <div id="aiSection" style="display:none;">
+        <div class="ai-status idle" id="aiStatus">
+          <div class="ai-dot"></div>
+          <span id="aiStatusText">Ready to read your recipe</span>
+        </div>
+        <button class="btn btn-primary" id="parseBtn" onclick="parseWithAI()">
+          ✦ Read &amp; Format Recipe
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Review & Edit -->
+    <div class="upload-card" id="editSection" style="display:none;">
+      <span class="section-label">Step 2 — Review &amp; Edit</span>
+
+      <div class="parsed-section">
+        <label>Recipe Title</label>
+        <input type="text" class="input-field" id="recipeTitle" placeholder="e.g. Kabab"/>
+      </div>
+
+      <div class="parsed-section">
+        <label>Ingredients (one per line)</label>
+        <textarea class="input-field" id="recipeIngredients" placeholder="1 lb ground beef&#10;Adrak lassan&#10;Masala…"></textarea>
+      </div>
+
+      <div class="parsed-section">
+        <label>Method / Steps (one per line)</label>
+        <textarea class="input-field" id="recipeSteps" style="min-height:140px;"
+                  placeholder="1. Wash the keema&#10;2. Mix with spices…"></textarea>
+      </div>
+
+      <div class="parsed-section">
+        <label>Tags</label>
+        <div class="tag-input-wrap" id="tagWrap" onclick="document.getElementById('tagInput').focus()">
+          <input type="text" id="tagInput" placeholder="type tag + Enter"
+                 onkeydown="handleTagInput(event)"/>
+        </div>
+      </div>
+
+      <div class="assign-row parsed-section">
+        <div>
+          <label>Assign To</label>
+          <select class="input-field" id="assignTo"></select>
+        </div>
+        <div>
+          <label>Uploaded By</label>
+          <select class="input-field" id="uploadedBy"></select>
+        </div>
+      </div>
+
+      <div class="parsed-section">
+        <label>Raw Source Note (optional)</label>
+        <input type="text" class="input-field" id="rawNote" placeholder="e.g. Original scan page 3 of Nani's notebook"/>
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-ghost" onclick="resetForm()">Start Over</button>
+        <button class="btn btn-primary" onclick="saveRecipe()">Save to Tree</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="../assets/app.js"></script>
+  <script>
+    if (sessionStorage.getItem('chumchi_site') !== 'true') window.location.href = '../index.html';
+    const sess = JSON.parse(sessionStorage.getItem('chumchi_session') || 'null');
+    if (!sess) window.location.href = '../platform/login.html';
+
+    const params     = new URLSearchParams(window.location.search);
+    const forMember  = params.get('member') || '';
+    const MEMBERS    = TREE.rafiq.members;
+
+    let uploadedFiles = [];
+    let tags = [];
+
+    // ── Populate member dropdowns ──
+    function populateDropdowns() {
+      const memberOptions = Object.values(MEMBERS)
+        .map(m => `<option value="${m.id}" ${m.id === forMember ? 'selected' : ''}>${m.name} (${m.role})</option>`)
+        .join('');
+      document.getElementById('assignTo').innerHTML   = memberOptions;
+      document.getElementById('uploadedBy').innerHTML = memberOptions;
+    }
+    populateDropdowns();
+
+    // ── File handling ──
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById('uploadZone').classList.add('dragover');
+    }
+
+    function handleDragLeave(e) {
+      document.getElementById('uploadZone').classList.remove('dragover');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('uploadZone').classList.remove('dragover');
+      handleFiles(e.dataTransfer.files);
+    }
+
+    function handleFiles(files) {
+      uploadedFiles = Array.from(files);
+      const strip = document.getElementById('previewStrip');
+      strip.innerHTML = '';
+
+      uploadedFiles.forEach(f => {
+        if (f.type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.className = 'preview-thumb';
+          img.src = URL.createObjectURL(f);
+          strip.appendChild(img);
+        } else {
+          const box = document.createElement('div');
+          box.className = 'preview-thumb';
+          box.style.cssText = 'display:flex;align-items:center;justify-content:center;background:var(--sage);font-size:0.65rem;color:var(--bark);text-align:center;padding:4px;';
+          box.textContent = f.name.substring(0,12);
+          strip.appendChild(box);
+        }
+      });
+
+      document.getElementById('aiSection').style.display = 'block';
+      setStatus('idle', 'Ready to read your recipe');
+    }
+
+    function setStatus(type, msg) {
+      const el = document.getElementById('aiStatus');
+      el.className = 'ai-status ' + type;
+      document.getElementById('aiStatusText').textContent = msg;
+    }
+
+    // ── AI Parse ──
+    async function parseWithAI() {
+      if (!uploadedFiles.length) return;
+      const btn = document.getElementById('parseBtn');
+      btn.disabled = true;
+      btn.textContent = 'Reading…';
+      setStatus('loading', 'Claude is reading your handwritten recipe…');
+
+      try {
+        // Convert first image to base64
+        const file = uploadedFiles[0];
+        const base64 = await fileToBase64(file);
+        const mediaType = file.type || 'image/jpeg';
+
+        const prompt = `You are reading a handwritten family recipe card. Extract and format:
+1. Recipe title
+2. Ingredients list (each on its own line)
+3. Method/steps (numbered)
+4. Suggested tags (comma separated, e.g.: beef, fried, main, snack)
+
+Respond ONLY as valid JSON, no markdown, no preamble:
+{
+  "title": "...",
+  "ingredients": ["...", "..."],
+  "steps": ["...", "..."],
+  "tags": ["...", "..."]
+}
+
+Note: Some words may be in Urdu/Hindi (e.g. gosht=meat, keema=ground meat, adrak lassan=ginger garlic, peeaz=onion, dahi=yogurt, pudina=mint, zeera=cumin, atta=flour, thel=oil). Keep these terms as written but add brief clarifications in parentheses where helpful.`;
+
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1000,
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+                { type: 'text', text: prompt }
+              ]
+            }]
+          })
+        });
+
+        const data = await response.json();
+        const text = data.content?.map(c => c.text || '').join('') || '';
+        const clean = text.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(clean);
+
+        document.getElementById('recipeTitle').value       = parsed.title || '';
+        document.getElementById('recipeIngredients').value = (parsed.ingredients || []).join('\n');
+        document.getElementById('recipeSteps').value       = (parsed.steps || []).join('\n');
+
+        tags = parsed.tags || [];
+        renderTags();
+
+        setStatus('done', `Recipe read successfully — review and edit below.`);
+        document.getElementById('editSection').style.display = 'block';
+        document.getElementById('editSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      } catch (err) {
+        console.error(err);
+        setStatus('error', 'Could not read automatically — please fill in the form below.');
+        document.getElementById('editSection').style.display = 'block';
+      }
+
+      btn.disabled = false;
+      btn.textContent = '✦ Re-read Recipe';
+    }
+
+    function fileToBase64(file) {
+      return new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result.split(',')[1]);
+        r.onerror = () => rej(new Error('Read failed'));
+        r.readAsDataURL(file);
+      });
+    }
+
+    // ── Tags ──
+    function handleTagInput(e) {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const val = e.target.value.trim().replace(/,/g, '');
+        if (val && !tags.includes(val)) {
+          tags.push(val);
+          renderTags();
+        }
+        e.target.value = '';
+      }
+    }
+
+    function removeTag(t) {
+      tags = tags.filter(x => x !== t);
+      renderTags();
+    }
+
+    function renderTags() {
+      const wrap = document.getElementById('tagWrap');
+      const input = document.getElementById('tagInput');
+      wrap.innerHTML = '';
+      tags.forEach(t => {
+        const chip = document.createElement('div');
+        chip.className = 'tag-chip';
+        chip.innerHTML = `${t}<button onclick="removeTag('${t}')">×</button>`;
+        wrap.appendChild(chip);
+      });
+      wrap.appendChild(input);
+    }
+
+    // ── Save ──
+    function saveRecipe() {
+      const title = document.getElementById('recipeTitle').value.trim();
+      if (!title) { showToast('Please add a recipe title.'); return; }
+
+      const ingredients = document.getElementById('recipeIngredients').value
+        .split('\n').map(s => s.trim()).filter(Boolean);
+      const steps = document.getElementById('recipeSteps').value
+        .split('\n').map(s => s.trim()).filter(Boolean);
+      const assignedTo  = document.getElementById('assignTo').value;
+      const uploadedBy  = document.getElementById('uploadedBy').value;
+      const rawNote     = document.getElementById('rawNote').value.trim();
+
+      // In a real app this would POST to a backend
+      // For now, store in sessionStorage as demo
+      const newRecipe = {
+        id: 'upload_' + Date.now(),
+        title, ingredients, steps, tags,
+        assignedTo, uploadedBy,
+        uploadDate: new Date().toISOString().split('T')[0],
+        rawNote: rawNote || 'Uploaded via Chumchi',
+      };
+
+      // Add to in-memory store
+      RECIPES.rafiq.push(newRecipe);
+
+      showToast(`"${title}" saved to ${MEMBERS[assignedTo]?.name || assignedTo}'s recipes.`);
+      setTimeout(() => {
+        window.location.href = `recipe.html?member=${assignedTo}`;
+      }, 1500);
+    }
+
+    function resetForm() {
+      uploadedFiles = [];
+      tags = [];
+      document.getElementById('previewStrip').innerHTML = '';
+      document.getElementById('aiSection').style.display = 'none';
+      document.getElementById('editSection').style.display = 'none';
+      document.getElementById('recipeTitle').value = '';
+      document.getElementById('recipeIngredients').value = '';
+      document.getElementById('recipeSteps').value = '';
+      renderTags();
+    }
+
+    function logout() {
+      sessionStorage.clear();
+      window.location.href = '../index.html';
+    }
+
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    }
+  </script>
+</body>
+</html>

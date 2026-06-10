@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chumchi — Your Tree</title>
+  <link rel="stylesheet" href="../assets/style.css"/>
+  <style>
+    body { background: var(--cream); overflow-x: hidden; }
+
+    /* ── Tree canvas ── */
+    .tree-page {
+      min-height: 100vh;
+      padding: 0 0 4rem;
+    }
+
+    .tree-title {
+      text-align: center;
+      padding: 2rem 1rem 0.5rem;
+    }
+
+    .tree-title h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.1rem, 3vw, 1.5rem);
+      font-weight: 300;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--bark);
+    }
+
+    .tree-title p {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 0.8rem;
+      color: var(--clay);
+      opacity: 0.7;
+      margin-top: 0.2rem;
+    }
+
+    /* ── Generation rows ── */
+    .tree-canvas {
+      position: relative;
+      padding: 2rem 1rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .gen-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: clamp(12px, 3vw, 32px);
+      margin-bottom: 3rem;
+      position: relative;
+      flex-wrap: wrap;
+    }
+
+    .gen-label {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.58rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.3;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      display: none;
+    }
+
+    @media (min-width: 600px) { .gen-label { display: block; } }
+
+    /* Couple connector */
+    .couple-unit {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .couple-link {
+      width: 20px;
+      height: 1px;
+      background: var(--clay);
+      opacity: 0.35;
+      flex-shrink: 0;
+    }
+
+    /* Vertical connector */
+    .v-connector {
+      width: 1px;
+      height: 32px;
+      background: var(--clay);
+      opacity: 0.25;
+      margin: -1.5rem auto;
+      display: block;
+    }
+
+    /* Siblings row connector */
+    .sibling-bar {
+      width: 60%;
+      height: 1px;
+      background: var(--clay);
+      opacity: 0.2;
+      margin: 0 auto -2.5rem;
+    }
+
+    /* Add relative button */
+    .add-btn {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 1.5px dashed rgba(196,120,90,0.4);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      color: var(--clay);
+      opacity: 0.5;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+    .add-btn:hover { opacity: 1; border-color: var(--clay); background: rgba(196,120,90,0.05); }
+
+    /* ── Highlight Panel ── */
+    .highlight-panel {
+      position: fixed;
+      z-index: 200;
+      background: var(--white);
+      border-radius: 18px;
+      padding: 1.5rem 1.6rem;
+      box-shadow: 0 12px 48px rgba(107,79,58,0.18);
+      width: 260px;
+      border-top: 3px solid var(--clay);
+      animation: panelIn 0.22s ease;
+    }
+
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .hp-name {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: var(--bark);
+      letter-spacing: 0.05em;
+    }
+
+    .hp-role {
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--clay);
+      margin-bottom: 0.8rem;
+      margin-top: 0.1rem;
+    }
+
+    .hp-recipes-list {
+      list-style: none;
+      margin-bottom: 1rem;
+    }
+
+    .hp-recipes-list li {
+      font-size: 0.78rem;
+      color: var(--ink);
+      padding: 0.25rem 0;
+      border-bottom: 1px solid rgba(107,79,58,0.06);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .hp-recipes-list li::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--clay);
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+
+    .hp-empty {
+      font-size: 0.75rem;
+      font-style: italic;
+      color: var(--bark);
+      opacity: 0.4;
+      margin-bottom: 1rem;
+    }
+
+    .hp-upload-note {
+      font-size: 0.65rem;
+      color: var(--clay);
+      opacity: 0.7;
+      font-style: italic;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .hp-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .hp-actions a, .hp-actions button {
+      flex: 1;
+      text-align: center;
+      padding: 0.6rem 0.4rem;
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      font-family: var(--font-body);
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .hp-btn-view {
+      background: var(--bark);
+      color: var(--cream);
+    }
+    .hp-btn-view:hover { background: var(--clay); }
+
+    .hp-btn-upload {
+      background: var(--blush);
+      color: var(--bark);
+    }
+    .hp-btn-upload:hover { background: var(--saffron); }
+
+    .hp-close {
+      position: absolute;
+      top: 0.8rem; right: 0.9rem;
+      background: none; border: none;
+      font-size: 1rem; cursor: pointer;
+      color: var(--bark); opacity: 0.35;
+      transition: var(--transition);
+    }
+    .hp-close:hover { opacity: 0.8; }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="top-nav">
+    <a href="#" class="nav-brand">
+      <img src="../assets/spoon.svg" style="width:14px;opacity:0.7;" alt=""/> Chumchi
+    </a>
+    <ul class="nav-links">
+      <li><a href="upload.html">+ Add Recipe</a></li>
+      <li><a href="#" onclick="logout()">Sign Out</a></li>
+    </ul>
+  </nav>
+
+  <div class="tree-page">
+    <div class="tree-title">
+      <h1 id="treeLabel">THE RAFIQ TREE</h1>
+      <p>Click a name to explore their recipes</p>
+    </div>
+
+    <div class="tree-canvas" id="treeCanvas">
+
+      <!-- Generation 0: Grandparents -->
+      <div class="gen-row" id="gen0">
+        <span class="gen-label">Grandparents</span>
+
+        <!-- Paternal -->
+        <div class="couple-unit">
+          <div class="bubble bubble-md bubble-sage float-1"
+               id="b-rafiq_khan"
+               onclick="showPanel(event,'rafiq_khan')">
+            <span class="bubble-name">Rafiq<br>Khan</span>
+            <span class="bubble-role">Paternal Grand.</span>
+          </div>
+          <div class="couple-link"></div>
+          <div class="bubble bubble-md bubble-lilac float-2"
+               id="b-mukhadis"
+               onclick="showPanel(event,'mukhadis')">
+            <span class="bubble-name">Mukhadis</span>
+            <span class="bubble-role">Paternal Grand.</span>
+          </div>
+        </div>
+
+        <div style="width:40px;"></div>
+
+        <!-- Maternal -->
+        <div class="couple-unit">
+          <div class="bubble bubble-md bubble-sage float-3"
+               id="b-abdul_hai"
+               onclick="showPanel(event,'abdul_hai')">
+            <span class="bubble-name">Abdul<br>Hai</span>
+            <span class="bubble-role">Maternal Grand.</span>
+          </div>
+          <div class="couple-link"></div>
+          <div class="bubble bubble-md bubble-lilac float-4"
+               id="b-rabiyah"
+               onclick="showPanel(event,'rabiyah')">
+            <span class="bubble-name">Rabiyah</span>
+            <span class="bubble-role">Maternal Grand.</span>
+          </div>
+        </div>
+
+        <!-- Add great-grandparents -->
+        <button class="add-btn" title="Add great-grandparent" onclick="promptAdd('great-grandparent')">+</button>
+      </div>
+
+      <span class="v-connector"></span>
+
+      <!-- Generation 1: Parents + Siblings -->
+      <div class="gen-row" id="gen1">
+        <span class="gen-label">Parents & Siblings</span>
+
+        <!-- Viq (Meher's brother) -->
+        <div class="bubble bubble-sm bubble-sage float-5"
+             id="b-viq"
+             onclick="showPanel(event,'viq')">
+          <span class="bubble-name">Viq</span>
+          <span class="bubble-role">Maternal Uncle</span>
+        </div>
+
+        <!-- Meher + Arshad (parents) -->
+        <div class="couple-unit">
+          <div class="bubble bubble-lg bubble-blush float-1"
+               id="b-meher"
+               onclick="showPanel(event,'meher')">
+            <span class="bubble-name">Meher</span>
+            <span class="bubble-role">Mother</span>
+            <span class="bubble-count">15</span>
+          </div>
+          <div class="couple-link" style="width:28px;"></div>
+          <div class="bubble bubble-lg bubble-saffron float-2"
+               id="b-arshad"
+               onclick="showPanel(event,'arshad')">
+            <span class="bubble-name">Arshad</span>
+            <span class="bubble-role">Father</span>
+          </div>
+        </div>
+
+        <!-- Arshad's siblings -->
+        <div class="bubble bubble-sm bubble-sage float-6"
+             id="b-azhar"
+             onclick="showPanel(event,'azhar')">
+          <span class="bubble-name">Azhar</span>
+          <span class="bubble-role">Uncle</span>
+        </div>
+
+        <div class="couple-unit">
+          <div class="bubble bubble-sm bubble-sage float-7"
+               id="b-athar"
+               onclick="showPanel(event,'athar')">
+            <span class="bubble-name">Athar</span>
+            <span class="bubble-role">Uncle</span>
+          </div>
+          <div class="couple-link"></div>
+          <div class="bubble bubble-sm bubble-lilac float-3"
+               id="b-ruksana"
+               onclick="showPanel(event,'ruksana')">
+            <span class="bubble-name">Ruksana</span>
+            <span class="bubble-role">Aunt</span>
+          </div>
+        </div>
+
+        <button class="add-btn" title="Add relative" onclick="promptAdd('parent-generation')">+</button>
+      </div>
+
+      <span class="v-connector"></span>
+
+      <!-- Generation 2: Me + Siblings + Cousins -->
+      <div class="gen-row" id="gen2">
+        <span class="gen-label">Our Generation</span>
+
+        <!-- Athar's kids -->
+        <div class="bubble bubble-xs bubble-cream float-4"
+             id="b-kamran"
+             onclick="showPanel(event,'kamran')">
+          <span class="bubble-name" style="font-size:0.65rem;">Kamran</span>
+        </div>
+        <div class="bubble bubble-xs bubble-cream float-5"
+             id="b-zuhair"
+             onclick="showPanel(event,'zuhair')">
+          <span class="bubble-name" style="font-size:0.65rem;">Zuhair</span>
+        </div>
+        <div class="bubble bubble-xs bubble-cream float-6"
+             id="b-maha"
+             onclick="showPanel(event,'maha')">
+          <span class="bubble-name" style="font-size:0.65rem;">Maha</span>
+        </div>
+
+        <div style="width:20px;"></div>
+
+        <!-- Me -->
+        <div class="bubble bubble-md bubble-blush float-1"
+             id="b-haana"
+             onclick="showPanel(event,'haana')"
+             style="border: 2.5px solid var(--clay);">
+          <span class="bubble-name">Haana</span>
+          <span class="bubble-role">Me</span>
+        </div>
+
+        <!-- Saara + Farhan -->
+        <div class="couple-unit">
+          <div class="bubble bubble-md bubble-blush float-2"
+               id="b-saara"
+               onclick="showPanel(event,'saara')">
+            <span class="bubble-name">Saara</span>
+            <span class="bubble-role">Sister</span>
+          </div>
+          <div class="couple-link"></div>
+          <div class="bubble bubble-sm bubble-saffron float-3"
+               id="b-farhan"
+               onclick="showPanel(event,'farhan')">
+            <span class="bubble-name">Farhan</span>
+            <span class="bubble-role">Bro-in-law</span>
+          </div>
+        </div>
+
+        <!-- Aalia -->
+        <div class="bubble bubble-md bubble-blush float-7"
+             id="b-aalia"
+             onclick="showPanel(event,'aalia')">
+          <span class="bubble-name">Aalia</span>
+          <span class="bubble-role">Sister</span>
+        </div>
+
+        <button class="add-btn" title="Add sibling/cousin" onclick="promptAdd('sibling')">+</button>
+      </div>
+
+      <span class="v-connector"></span>
+
+      <!-- Generation 3: Kids -->
+      <div class="gen-row" id="gen3">
+        <span class="gen-label">Next Gen</span>
+
+        <div class="bubble bubble-xs bubble-cream float-5"
+             id="b-izza"
+             onclick="showPanel(event,'izza')">
+          <span class="bubble-name" style="font-size:0.65rem;">Izza</span>
+          <span class="bubble-role">Niece</span>
+        </div>
+
+        <button class="add-btn" title="Add child" onclick="promptAdd('child')">+</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../assets/app.js"></script>
+  <script>
+
+    // ── Auth gate ──
+    if (sessionStorage.getItem('chumchi_site') !== 'true') {
+      window.location.href = '../index.html';
+    }
+    const sess = JSON.parse(sessionStorage.getItem('chumchi_session') || 'null');
+    if (!sess) window.location.href = '../platform/login.html';
+
+    const MEMBERS = TREE.rafiq.members;
+    const FAMILY_RECIPES = RECIPES.rafiq;
+
+    function getRecipes(memberId) {
+      return FAMILY_RECIPES.filter(r => r.assignedTo === memberId);
+    }
+
+    // ── Show highlight panel ──
+    function showPanel(e, memberId) {
+      e.stopPropagation();
+      closeAllPanels();
+
+      const bubble = document.getElementById('b-' + memberId);
+      bubble.classList.add('active');
+
+      const member   = MEMBERS[memberId];
+      const recipes  = getRecipes(memberId);
+      const rect     = bubble.getBoundingClientRect();
+
+      const panel = document.createElement('div');
+      panel.className = 'highlight-panel';
+
+      // Upload note (if any recipes)
+      let uploadNote = '';
+      if (recipes.length > 0) {
+        const first = recipes[0];
+        const uploader = MEMBERS[first.uploadedBy] || { name: first.uploadedBy };
+        uploadNote = `<p class="hp-upload-note">
+          ${uploader.name} uploaded ${recipes.length} recipe${recipes.length > 1 ? 's' : ''}
+          to ${member.name} on ${formatDate(first.uploadDate)}
+        </p>`;
+      }
+
+      // Recipe list (max 4 preview)
+      let recipeHTML = '';
+      if (recipes.length > 0) {
+        recipeHTML = `<ul class="hp-recipes-list">
+          ${recipes.slice(0,4).map(r => `<li>${r.title}</li>`).join('')}
+          ${recipes.length > 4 ? `<li style="opacity:0.4;font-style:italic;">+${recipes.length - 4} more…</li>` : ''}
+        </ul>`;
+      } else {
+        recipeHTML = `<p class="hp-empty">No recipes yet.</p>`;
+      }
+
+      panel.innerHTML = `
+        <button class="hp-close" onclick="closeAllPanels()">✕</button>
+        <div class="hp-name">${member.name}</div>
+        <div class="hp-role">${member.role}${member.maidenName ? ' · née ' + member.maidenName : ''}</div>
+        ${uploadNote}
+        ${recipeHTML}
+        <div class="hp-actions">
+          ${recipes.length > 0
+            ? `<a class="hp-btn-view" href="recipe.html?member=${memberId}">View Recipes</a>`
+            : `<span style="flex:1;"></span>`
+          }
+          <a class="hp-btn-upload" href="upload.html?member=${memberId}">+ Upload</a>
+        </div>
+      `;
+
+      document.body.appendChild(panel);
+
+      // Position panel
+      const pw = 260;
+      const ph = 320;
+      let left = rect.right + 12;
+      let top  = rect.top + window.scrollY;
+
+      if (left + pw > window.innerWidth - 12) left = rect.left - pw - 12;
+      if (left < 12) left = 12;
+      if (top + ph > window.scrollY + window.innerHeight - 20) {
+        top = window.scrollY + window.innerHeight - ph - 20;
+      }
+
+      panel.style.left = left + 'px';
+      panel.style.top  = top + 'px';
+    }
+
+    function closeAllPanels() {
+      document.querySelectorAll('.highlight-panel').forEach(p => p.remove());
+      document.querySelectorAll('.bubble.active').forEach(b => b.classList.remove('active'));
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.bubble') && !e.target.closest('.highlight-panel')) {
+        closeAllPanels();
+      }
+    });
+
+    function promptAdd(type) {
+      showToast(`Add ${type} — feature coming soon. Contact your family admin.`);
+    }
+
+    function logout() {
+      sessionStorage.clear();
+      window.location.href = '../index.html';
+    }
+
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    }
+
+    function formatDate(d) {
+      return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+  </script>
+</body>
+</html>

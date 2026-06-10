@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chumchi — Superadmin</title>
+  <link rel="stylesheet" href="../assets/style.css"/>
+  <style>
+    body { background: var(--cream); }
+
+    .page-wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.2rem 5rem;
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .admin-header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 300;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--bark);
+    }
+
+    .admin-header p {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 0.82rem;
+      color: var(--clay);
+      margin-top: 0.2rem;
+      opacity: 0.75;
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 1.2rem 1.4rem;
+      box-shadow: var(--shadow-soft);
+      text-align: center;
+    }
+
+    .stat-number {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 300;
+      color: var(--bark);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--clay);
+      opacity: 0.65;
+      margin-top: 0.3rem;
+    }
+
+    /* Family cards */
+    .families-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 2rem;
+    }
+
+    .family-card {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 1.8rem;
+      box-shadow: var(--shadow-soft);
+      transition: var(--transition);
+      border-left: 4px solid var(--blush);
+    }
+
+    .family-card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+    }
+
+    .fc-name {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      color: var(--bark);
+      margin-bottom: 0.2rem;
+    }
+
+    .fc-meta {
+      font-size: 0.7rem;
+      color: var(--clay);
+      opacity: 0.65;
+      margin-bottom: 1rem;
+      letter-spacing: 0.06em;
+    }
+
+    .fc-counts {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .fc-count-item {
+      text-align: center;
+    }
+
+    .fc-count-item .num {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 300;
+      color: var(--bark);
+      line-height: 1;
+    }
+
+    .fc-count-item .lbl {
+      font-size: 0.58rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--clay);
+      opacity: 0.55;
+    }
+
+    .fc-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* Member mini bubbles */
+    .member-bubbles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 1rem;
+    }
+
+    .mini-bubble {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      color: var(--bark);
+      font-weight: 500;
+      title: '';
+    }
+
+    /* Add family form */
+    .add-family-card {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 1.8rem;
+      box-shadow: var(--shadow-soft);
+      border-left: 4px dashed rgba(196,120,90,0.3);
+      margin-bottom: 2rem;
+    }
+
+    .add-family-card h3 {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--bark);
+      margin-bottom: 1.2rem;
+    }
+
+    .add-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 500px) { .add-form-grid { grid-template-columns: 1fr; } }
+
+    .form-group label {
+      display: block;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.5;
+      margin-bottom: 0.35rem;
+    }
+
+    /* Recipe log */
+    .log-section {
+      margin-top: 2rem;
+    }
+
+    .log-section h2 {
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+
+    .log-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--white);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .log-table th {
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--clay);
+      opacity: 0.7;
+      padding: 0.8rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(107,79,58,0.08);
+      background: var(--cream);
+    }
+
+    .log-table td {
+      font-size: 0.8rem;
+      color: var(--ink);
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(107,79,58,0.05);
+    }
+
+    .log-table tr:last-child td { border-bottom: none; }
+
+    .log-table tr:hover td { background: rgba(253,246,236,0.6); }
+  </style>
+</head>
+<body>
+
+  <nav class="top-nav">
+    <a href="#" class="nav-brand">
+      <img src="../assets/spoon.svg" style="width:14px;opacity:0.7;" alt=""/> Chumchi
+    </a>
+    <ul class="nav-links">
+      <li><span style="font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;opacity:0.4;">Superadmin</span></li>
+      <li><a href="#" onclick="logout()">Sign Out</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-wrap">
+
+    <div class="admin-header">
+      <div>
+        <h1>All Family Trees</h1>
+        <p>Superadmin overview — every tree, every recipe</p>
+      </div>
+      <button class="btn btn-primary" onclick="toggleAddForm()">+ Add Family</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar" id="statsBar"></div>
+
+    <!-- Add family form (hidden by default) -->
+    <div class="add-family-card" id="addFamilyForm" style="display:none;">
+      <h3>Register New Family</h3>
+      <div class="add-form-grid">
+        <div class="form-group">
+          <label>Family Name</label>
+          <input type="text" class="input-field" id="nf-name" placeholder="e.g. Khan"/>
+        </div>
+        <div class="form-group">
+          <label>Admin Username</label>
+          <input type="text" class="input-field" id="nf-admin" placeholder="khan-admin"/>
+        </div>
+        <div class="form-group">
+          <label>Admin Password</label>
+          <input type="text" class="input-field" id="nf-apwd" placeholder="khan2026"/>
+        </div>
+        <div class="form-group">
+          <label>Member Password</label>
+          <input type="text" class="input-field" id="nf-mpwd" placeholder="Khan2026"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.6rem;">
+        <button class="btn btn-ghost" onclick="toggleAddForm()">Cancel</button>
+        <button class="btn btn-primary" onclick="addFamily()">Create Family Tree</button>
+      </div>
+    </div>
+
+    <!-- Family cards -->
+    <div class="families-grid" id="familiesGrid"></div>
+
+    <!-- Recipe log -->
+    <div class="log-section">
+      <h2>Recent Recipe Activity</h2>
+      <table class="log-table">
+        <thead>
+          <tr>
+            <th>Recipe</th>
+            <th>Family</th>
+            <th>Assigned To</th>
+            <th>Uploaded By</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="logTable"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script src="../assets/app.js"></script>
+  <script>
+    if (sessionStorage.getItem('chumchi_site') !== 'true') window.location.href = '../index.html';
+    const sess = JSON.parse(sessionStorage.getItem('chumchi_session') || 'null');
+    if (!sess || sess.role !== 'superadmin') window.location.href = '../platform/login.html';
+
+    // Family registry (in-memory for demo)
+    let families = [
+      {
+        id: 'rafiq',
+        name: 'Rafiq',
+        adminUser: 'rafiq-admin',
+        memberCount: Object.keys(TREE.rafiq.members).length,
+        recipeCount: RECIPES.rafiq.length,
+        color: '#F2C4B0',
+        members: TREE.rafiq.members,
+      }
+    ];
+
+    function renderStats() {
+      const totalFamilies = families.length;
+      const totalMembers  = families.reduce((a,f) => a + f.memberCount, 0);
+      const totalRecipes  = families.reduce((a,f) => a + f.recipeCount, 0);
+
+      document.getElementById('statsBar').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-number">${totalFamilies}</div>
+          <div class="stat-label">Families</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${totalMembers}</div>
+          <div class="stat-label">Members</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${totalRecipes}</div>
+          <div class="stat-label">Recipes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${families.reduce((a,f) => a + Object.values(f.members||{}).filter(m=>m.recipeCount>0).length, 0)}</div>
+          <div class="stat-label">Contributors</div>
+        </div>
+      `;
+    }
+
+    function renderFamilies() {
+      const bubbleColors = ['#F2C4B0','#C8D8C0','#F0C070','#D4C0D8','#FDF6EC'];
+      document.getElementById('familiesGrid').innerHTML = families.map(f => {
+        const memberList = Object.values(f.members || {}).slice(0,8);
+        const bubbles = memberList.map((m,i) =>
+          `<div class="mini-bubble" style="background:${bubbleColors[i%bubbleColors.length]};" title="${m.name}">${m.name[0]}</div>`
+        ).join('');
+
+        return `
+          <div class="family-card" style="border-left-color:${f.color};">
+            <div class="fc-name">${f.name} Family</div>
+            <div class="fc-meta">Admin: ${f.adminUser}</div>
+            <div class="member-bubbles">${bubbles}</div>
+            <div class="fc-counts">
+              <div class="fc-count-item">
+                <div class="num">${f.memberCount}</div>
+                <div class="lbl">Members</div>
+              </div>
+              <div class="fc-count-item">
+                <div class="num">${f.recipeCount}</div>
+                <div class="lbl">Recipes</div>
+              </div>
+            </div>
+            <div class="fc-actions">
+              <a href="family-admin.html?family=${f.id}" class="btn btn-soft" style="flex:1;text-align:center;font-size:0.65rem;">Manage Tree</a>
+              <button class="btn btn-ghost" style="font-size:0.65rem;" onclick="viewFamilyRecipes('${f.id}')">Recipes</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderLog() {
+      const rows = RECIPES.rafiq.slice(0,10).map(r => {
+        const assignee = TREE.rafiq.members[r.assignedTo];
+        const uploader = TREE.rafiq.members[r.uploadedBy];
+        return `<tr>
+          <td><strong>${r.title}</strong></td>
+          <td>Rafiq</td>
+          <td>${assignee?.name || r.assignedTo}</td>
+          <td>${uploader?.name || r.uploadedBy}</td>
+          <td>${formatDate(r.uploadDate)}</td>
+        </tr>`;
+      }).join('');
+      document.getElementById('logTable').innerHTML = rows;
+    }
+
+    function toggleAddForm() {
+      const f = document.getElementById('addFamilyForm');
+      f.style.display = f.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function addFamily() {
+      const name  = document.getElementById('nf-name').value.trim();
+      const admin = document.getElementById('nf-admin').value.trim();
+      const apwd  = document.getElementById('nf-apwd').value.trim();
+      const mpwd  = document.getElementById('nf-mpwd').value.trim();
+
+      if (!name || !admin || !apwd || !mpwd) {
+        showToast('Please fill all fields.');
+        return;
+      }
+
+      families.push({
+        id: name.toLowerCase(),
+        name, adminUser: admin,
+        memberCount: 0, recipeCount: 0,
+        color: '#C8D8C0',
+        members: {},
+      });
+
+      showToast(`${name} Family tree created.`);
+      toggleAddForm();
+      renderStats();
+      renderFamilies();
+    }
+
+    function viewFamilyRecipes(id) {
+      // In a real app navigate to filtered recipe view
+      showToast(`Opening ${id} family recipes…`);
+    }
+
+    function formatDate(d) {
+      return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    }
+
+    function logout() {
+      sessionStorage.clear();
+      window.location.href = '../index.html';
+    }
+
+    renderStats();
+    renderFamilies();
+    renderLog();
+  </script>
+</body>
+</html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chumchi — Sign In</title>
+  <link rel="stylesheet" href="../assets/style.css"/>
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--cream);
+      overflow: hidden;
+    }
+
+    .bg-blob { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.22; pointer-events: none; z-index: 0; }
+    .blob-1 { width: 400px; height: 400px; background: var(--blush);   top: -80px;  left: -60px; }
+    .blob-2 { width: 300px; height: 300px; background: var(--lilac);   bottom: -60px; right: -40px; }
+    .blob-3 { width: 220px; height: 220px; background: var(--saffron); top: 30%; right: 10%; }
+
+    .login-wrap {
+      position: relative;
+      z-index: 1;
+      width: 90%;
+      max-width: 400px;
+      animation: fadeUp 0.5s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .brand-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      font-weight: 300;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--bark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .brand-title img { width: 18px; opacity: 0.7; }
+
+    .brand-sub {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 0.85rem;
+      letter-spacing: 0.14em;
+      color: var(--clay);
+      margin-top: 0.3rem;
+    }
+
+    .login-card {
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(16px);
+      border-radius: 20px;
+      padding: 2.4rem 2.2rem;
+      box-shadow: 0 8px 40px rgba(107,79,58,0.10);
+      border: 1px solid rgba(255,255,255,0.8);
+    }
+
+    .form-group {
+      margin-bottom: 1.1rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.6;
+      margin-bottom: 0.4rem;
+    }
+
+    /* Role tabs */
+    .role-tabs {
+      display: flex;
+      gap: 0;
+      border-radius: var(--radius-input);
+      overflow: hidden;
+      border: 1.5px solid rgba(107,79,58,0.18);
+      margin-bottom: 1.6rem;
+    }
+
+    .role-tab {
+      flex: 1;
+      padding: 0.7rem 0.5rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-family: var(--font-body);
+      font-weight: 500;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--bark);
+      opacity: 0.5;
+      transition: var(--transition);
+    }
+
+    .role-tab.active {
+      background: var(--bark);
+      color: var(--cream);
+      opacity: 1;
+    }
+
+    .role-tab:not(:last-child) {
+      border-right: 1.5px solid rgba(107,79,58,0.18);
+    }
+
+    .error-msg {
+      color: var(--clay);
+      font-size: 0.75rem;
+      font-style: italic;
+      letter-spacing: 0.04em;
+      min-height: 1.2rem;
+      margin-top: 0.6rem;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 1.4rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--bark);
+      opacity: 0.4;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .back-link:hover { opacity: 0.8; }
+  </style>
+</head>
+<body>
+
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+
+  <div class="login-wrap">
+
+    <div class="brand-header">
+      <div class="brand-title">
+        <img src="../assets/spoon.svg" alt="spoon"/> Chumchi
+      </div>
+      <div class="brand-sub">silver spoon energy</div>
+    </div>
+
+    <div class="login-card">
+
+      <!-- Role selector -->
+      <div class="role-tabs">
+        <button class="role-tab" id="tab-super"  onclick="setRole('superadmin')">Superadmin</button>
+        <button class="role-tab" id="tab-admin"  onclick="setRole('admin')">Family Admin</button>
+        <button class="role-tab active" id="tab-family" onclick="setRole('family')">Family</button>
+      </div>
+
+      <!-- Superadmin form -->
+      <div id="form-superadmin" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" class="input-field" id="sa-user" placeholder="superadmin" autocomplete="off"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="input-field" id="sa-pwd" placeholder="••••••••"
+            onkeydown="if(event.key==='Enter') doLogin()"/>
+        </div>
+      </div>
+
+      <!-- Family admin form -->
+      <div id="form-admin" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">Family Name</label>
+          <input type="text" class="input-field" id="fa-family" placeholder="e.g. Rafiq" autocomplete="off"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Admin Username</label>
+          <input type="text" class="input-field" id="fa-user" placeholder="family-admin" autocomplete="off"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="input-field" id="fa-pwd" placeholder="••••••••"
+            onkeydown="if(event.key==='Enter') doLogin()"/>
+        </div>
+      </div>
+
+      <!-- Family member form -->
+      <div id="form-family">
+        <div class="form-group">
+          <label class="form-label">Family Name</label>
+          <input type="text" class="input-field" id="fm-family" placeholder="Family Name" autocomplete="off"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="input-field" id="fm-pwd" placeholder="LastName + Year"
+            onkeydown="if(event.key==='Enter') doLogin()"/>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:0; margin-top:1.4rem;">
+        <button class="btn btn-primary" style="width:100%;" onclick="doLogin()">Enter</button>
+      </div>
+
+      <p class="error-msg" id="loginError"></p>
+
+    </div>
+
+    <a href="../index.html" class="back-link">← Back to Chumchi</a>
+
+  </div>
+
+  <script>
+    // Gate check
+    if (sessionStorage.getItem('chumchi_site') !== 'true') {
+      window.location.href = '../index.html';
+    }
+
+    // Already logged in
+    const sess = sessionStorage.getItem('chumchi_session');
+    if (sess) {
+      const s = JSON.parse(sess);
+      if (s.role === 'superadmin') window.location.href = '../admin/dashboard.html';
+      else if (s.role === 'admin')  window.location.href = '../admin/family-admin.html';
+      else window.location.href = '../family/tree.html';
+    }
+
+    let currentRole = 'family';
+
+    function setRole(role) {
+      currentRole = role;
+      ['superadmin','admin','family'].forEach(r => {
+        document.getElementById('form-' + r).style.display = 'none';
+        document.getElementById('tab-' + (r === 'superadmin' ? 'super' : r === 'admin' ? 'admin' : 'family')).classList.remove('active');
+      });
+      document.getElementById('form-' + role).style.display = 'block';
+      const tabId = role === 'superadmin' ? 'super' : role === 'admin' ? 'admin' : 'family';
+      document.getElementById('tab-' + tabId).classList.add('active');
+      document.getElementById('loginError').textContent = '';
+    }
+
+    // Credential store
+    const FAMILIES = {
+      rafiq: { adminUser: 'rafiq-admin', adminPwd: 'rafiq2026', memberPwd: 'Rafiq2026' }
+    };
+    const SUPER = { user: 'superadmin', pwd: 'admin1' };
+
+    function doLogin() {
+      const err = document.getElementById('loginError');
+      err.textContent = '';
+
+      if (currentRole === 'superadmin') {
+        const u = document.getElementById('sa-user').value.trim();
+        const p = document.getElementById('sa-pwd').value.trim();
+        if (u === SUPER.user && p === SUPER.pwd) {
+          sessionStorage.setItem('chumchi_session', JSON.stringify({ role: 'superadmin' }));
+          window.location.href = '../admin/dashboard.html';
+        } else {
+          err.textContent = 'Invalid credentials.';
+        }
+      }
+
+      else if (currentRole === 'admin') {
+        const fam = document.getElementById('fa-family').value.trim().toLowerCase();
+        const u   = document.getElementById('fa-user').value.trim();
+        const p   = document.getElementById('fa-pwd').value.trim();
+        const f   = FAMILIES[fam];
+        if (f && u === f.adminUser && p === f.adminPwd) {
+          sessionStorage.setItem('chumchi_session', JSON.stringify({ role: 'admin', family: fam }));
+          window.location.href = '../admin/family-admin.html';
+        } else {
+          err.textContent = 'Family or credentials not found.';
+        }
+      }
+
+      else {
+        const fam = document.getElementById('fm-family').value.trim().toLowerCase();
+        const p   = document.getElementById('fm-pwd').value.trim();
+        const f   = FAMILIES[fam];
+        if (f && p === f.memberPwd) {
+          sessionStorage.setItem('chumchi_session', JSON.stringify({ role: 'family', family: fam }));
+          window.location.href = '../family/tree.html';
+        } else {
+          err.textContent = 'Family name or password incorrect.';
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>
