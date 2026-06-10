@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chumchi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
+  <style>
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1c0e08;
+    }
+
+    /* ── Background ── */
+    .bg {
+      position: fixed;
+      inset: 0;
+      background-image: url('assets/bg-login.jpg');
+      background-size: cover;
+      background-position: center 20%;
+      z-index: 0;
+    }
+
+    /* Very gentle gradient — darkens bottom slightly so box floats */
+    .bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(20, 8, 4, 0.04) 0%,
+        rgba(20, 8, 4, 0.12) 60%,
+        rgba(20, 8, 4, 0.28) 100%
+      );
+    }
+
+    /* ── The floating glass box ── */
+    .box {
+      position: relative;
+      z-index: 10;
+      width: 320px;
+
+      /* Ghost transparent — barely there */
+      background: rgba(255, 248, 235, 0.08);
+      backdrop-filter: blur(22px) brightness(1.06);
+      -webkit-backdrop-filter: blur(22px) brightness(1.06);
+
+      padding: 2.8rem 2.6rem 2.4rem;
+
+      /* Fade up on load */
+      animation: rise 0.7s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Four bracket corners only — razor thin ── */
+    .c { position: absolute; width: 16px; height: 16px; }
+    .c-tl { top: 0;    left: 0;    border-top: 1px solid rgba(255,248,235,0.5); border-left:  1px solid rgba(255,248,235,0.5); }
+    .c-tr { top: 0;    right: 0;   border-top: 1px solid rgba(255,248,235,0.5); border-right: 1px solid rgba(255,248,235,0.5); }
+    .c-bl { bottom: 0; left: 0;    border-bottom: 1px solid rgba(255,248,235,0.5); border-left:  1px solid rgba(255,248,235,0.5); }
+    .c-br { bottom: 0; right: 0;   border-bottom: 1px solid rgba(255,248,235,0.5); border-right: 1px solid rgba(255,248,235,0.5); }
+
+    /* ── CHUMCHI wordmark ── */
+    .wordmark {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .wordmark svg {
+      width: 14px;
+      flex-shrink: 0;
+    }
+
+    .wordmark-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: 2.45rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      /* Pulled left to optically center with letter-spacing trailing space */
+      margin-right: -0.32em;
+      color: rgba(255, 248, 230, 0.95);
+      line-height: 1;
+      /* Prevent wrapping at any viewport */
+      white-space: nowrap;
+    }
+
+    /* ── Silver spoon energy — bevel caps ── */
+    .tagline {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: 0.58rem;
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+      /* Optical compensation for trailing letter-spacing */
+      margin-right: -0.38em;
+
+      /* Bevel silver effect */
+      background: linear-gradient(
+        175deg,
+        rgba(255,255,255,0.95) 0%,
+        rgba(210,210,225,0.9)  35%,
+        rgba(160,165,180,0.85) 65%,
+        rgba(200,205,220,0.9)  100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+
+      /* Glow */
+      filter: drop-shadow(0 0 6px rgba(220,225,255,0.45));
+      animation: silverPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes silverPulse {
+      0%, 100% { filter: drop-shadow(0 0 5px rgba(220,225,255,0.35)); }
+      50%       { filter: drop-shadow(0 0 14px rgba(220,225,255,0.7)); }
+    }
+
+    /* ── Divider ── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin: 1.8rem 0 1.6rem;
+    }
+
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: rgba(255,248,235,0.14);
+    }
+
+    .divider-mark {
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: rgba(255,220,140,0.55);
+    }
+
+    /* ── Input + enter fused ── */
+    .field {
+      display: flex;
+      /* Thin perimeter line — barely visible */
+      border: 1px solid rgba(255,248,235,0.2);
+    }
+
+    .field input {
+      flex: 1;
+      min-width: 0;
+      padding: 0.88rem 1rem;
+      background: rgba(255,248,235,0.06);
+      border: none;
+      outline: none;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.95rem;
+      font-style: italic;
+      letter-spacing: 0.1em;
+      color: rgba(255,248,230,0.88);
+      /* iOS fixes */
+      -webkit-appearance: none;
+      border-radius: 0;
+    }
+
+    .field input::placeholder {
+      color: rgba(255,248,230,0.28);
+      font-style: italic;
+      letter-spacing: 0.14em;
+    }
+
+    .field button {
+      flex-shrink: 0;
+      padding: 0.88rem 1.1rem;
+      background: rgba(200,120,60,0.38);
+      border: none;
+      border-left: 1px solid rgba(255,248,235,0.12);
+      cursor: pointer;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.65rem;
+      font-weight: 400;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: rgba(255,248,230,0.88);
+      transition: background 0.2s;
+      white-space: nowrap;
+      border-radius: 0;
+    }
+
+    .field button:hover  { background: rgba(200,120,60,0.62); }
+    .field button:active { background: rgba(200,120,60,0.8); }
+
+    /* ── Error ── */
+    .err {
+      margin-top: 0.6rem;
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      color: rgba(255,200,160,0.7);
+      min-height: 1rem;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="bg"></div>
+
+  <div class="box">
+    <!-- Bracket corners -->
+    <span class="c c-tl"></span>
+    <span class="c c-tr"></span>
+    <span class="c c-bl"></span>
+    <span class="c c-br"></span>
+
+    <!-- Wordmark -->
+    <div class="wordmark">
+      <svg viewBox="0 0 20 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="10" cy="8.5" rx="6" ry="8" stroke="rgba(255,248,230,0.72)" stroke-width="1.1"/>
+        <line x1="10" y1="16.5" x2="10" y2="51" stroke="rgba(255,248,230,0.72)" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      <span class="wordmark-text">Chumchi</span>
+    </div>
+
+    <!-- Tagline -->
+    <div class="tagline">Silver Spoon Energy</div>
+
+    <!-- Divider -->
+    <div class="divider">
+      <div class="divider-line"></div>
+      <div class="divider-mark"></div>
+      <div class="divider-line"></div>
+    </div>
+
+    <!-- Password field -->
+    <div class="field">
+      <input
+        type="password"
+        id="pwd"
+        placeholder="Access Here"
+        autocomplete="off"
+        onkeydown="if(event.key==='Enter') go()"
+      />
+      <button onclick="go()">Enter</button>
+    </div>
+
+    <p class="err" id="err"></p>
+  </div>
+
+  <script>
+    if (sessionStorage.getItem('chumchi_site') === 'true') {
+      window.location.href = 'platform/login.html';
+    }
+
+    function go() {
+      const v = document.getElementById('pwd').value.trim();
+      if (v === 'tree2026') {
+        sessionStorage.setItem('chumchi_site', 'true');
+        window.location.href = 'platform/login.html';
+      } else {
+        document.getElementById('err').textContent = 'Incorrect — try again.';
+        document.getElementById('pwd').value = '';
+        document.getElementById('pwd').focus();
+      }
+    }
+  </script>
+
+</body>
+</html>
