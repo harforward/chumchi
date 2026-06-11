@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chumchi — Recipes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--cream:#FDF6EC;--blush:#F2C4B0;--sage:#C8D8C0;--saffron:#F0C070;--lilac:#D4C0D8;--clay:#C4785A;--bark:#6B4F3A;--ink:#2C2118;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--cream);font-family:'Inter',sans-serif;color:var(--ink);min-height:100vh;}
+
+    .top-nav{height:52px;display:flex;align-items:center;padding:0 1.5rem;gap:1rem;
+      background:rgba(253,246,236,0.95);backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(107,79,58,0.08);position:sticky;top:0;z-index:100;}
+    .nav-ham{width:36px;height:36px;border:none;background:none;cursor:pointer;
+      display:flex;flex-direction:column;justify-content:center;gap:5px;padding:4px;}
+    .nav-ham span{display:block;height:1.5px;background:var(--bark);border-radius:2px;}
+    .nav-brand{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;
+      letter-spacing:0.26em;text-transform:uppercase;color:var(--bark);text-decoration:none;}
+    .nav-right{margin-left:auto;display:flex;gap:1rem;align-items:center;}
+    .nav-link{font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;
+      color:var(--bark);opacity:0.42;text-decoration:none;cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif;}
+    .nav-link:hover{opacity:0.9;}
+
+    .page{max-width:860px;margin:0 auto;padding:2rem 1.2rem 5rem;}
+
+    .back-link{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.62rem;
+      letter-spacing:0.16em;text-transform:uppercase;color:var(--bark);opacity:0.38;
+      text-decoration:none;margin-bottom:1.5rem;transition:opacity 0.2s;}
+    .back-link:hover{opacity:0.85;}
+
+    /* Member header */
+    .member-header{display:flex;align-items:center;gap:1.2rem;margin-bottom:2rem;flex-wrap:wrap;}
+    .member-avatar{width:68px;height:68px;border-radius:50%;display:flex;
+      align-items:center;justify-content:center;flex-shrink:0;}
+    .member-avatar span{font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:300;color:var(--bark);}
+    .member-info h1{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;
+      letter-spacing:0.14em;text-transform:uppercase;color:var(--bark);line-height:1;}
+    .member-info p{font-family:'Cormorant Garamond',serif;font-style:italic;
+      font-size:0.82rem;color:var(--clay);margin-top:0.25rem;opacity:0.75;}
+
+    /* Loading */
+    .loading{text-align:center;padding:3rem;font-family:'Cormorant Garamond',serif;
+      font-style:italic;color:var(--bark);opacity:0.35;}
+
+    /* Recipe grid */
+    .recipe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem;margin-bottom:1rem;}
+
+    .recipe-card{background:#fff;border-radius:14px;padding:1.4rem;
+      box-shadow:0 2px 16px rgba(107,79,58,0.07);cursor:pointer;transition:all 0.22s;
+      border-left:3px solid transparent;position:relative;}
+    .recipe-card:hover{box-shadow:0 4px 24px rgba(107,79,58,0.12);transform:translateY(-1px);border-left-color:var(--clay);}
+    .recipe-card.open{border-left-color:var(--clay);}
+
+    .rc-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;
+      color:var(--bark);letter-spacing:0.05em;margin-bottom:0.4rem;}
+    .rc-tags{margin-bottom:0.6rem;}
+    .recipe-tag{display:inline-block;padding:0.18rem 0.55rem;border-radius:20px;
+      font-size:0.6rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;
+      background:var(--sage);color:var(--bark);margin:0.15rem;}
+    .rc-meta{font-size:0.62rem;color:var(--clay);opacity:0.6;font-style:italic;letter-spacing:0.03em;}
+    .rc-move{position:absolute;top:0.7rem;right:0.8rem;background:none;border:none;
+      font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;
+      color:var(--bark);opacity:0.25;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity 0.2s;}
+    .rc-move:hover{opacity:0.8;color:var(--clay);}
+
+    /* Recipe detail */
+    .recipe-detail{display:none;background:#fff;border-radius:14px;padding:2rem;
+      box-shadow:0 2px 16px rgba(107,79,58,0.08);margin-bottom:1rem;
+      border-top:3px solid var(--clay);animation:slideDown 0.22s ease;}
+    .recipe-detail.visible{display:block;}
+    @keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+    .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+    @media(max-width:580px){.detail-grid{grid-template-columns:1fr;}}
+
+    .detail-section h3{font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;
+      color:var(--clay);margin-bottom:0.7rem;padding-bottom:0.35rem;
+      border-bottom:1px solid rgba(107,79,58,0.08);}
+    .detail-section ul,.detail-section ol{list-style:none;padding:0;}
+    .detail-section li{font-size:0.83rem;color:var(--ink);padding:0.3rem 0;
+      border-bottom:1px solid rgba(107,79,58,0.04);display:flex;gap:0.4rem;line-height:1.45;}
+    .detail-section ul li::before{content:'—';color:var(--clay);opacity:0.35;flex-shrink:0;font-size:0.7rem;margin-top:0.1rem;}
+    .steps-list{counter-reset:step;}
+    .steps-list li{counter-increment:step;padding-left:1.8rem;position:relative;}
+    .steps-list li::before{content:counter(step);position:absolute;left:0;
+      font-family:'Cormorant Garamond',serif;font-size:0.85rem;color:var(--clay);opacity:0.5;}
+
+    /* Recipe image */
+    .recipe-img{width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-bottom:1rem;}
+
+    .raw-toggle{margin-top:1.4rem;padding-top:0.9rem;border-top:1px dashed rgba(107,79,58,0.12);}
+    .raw-btn{background:none;border:none;font-size:0.6rem;letter-spacing:0.16em;
+      text-transform:uppercase;color:var(--bark);opacity:0.35;cursor:pointer;font-family:'Inter',sans-serif;}
+    .raw-btn:hover{opacity:0.8;}
+    .raw-note{display:none;margin-top:0.7rem;font-size:0.73rem;font-style:italic;
+      color:var(--bark);opacity:0.5;background:var(--cream);padding:0.7rem 0.9rem;border-radius:6px;line-height:1.6;}
+    .raw-note.open{display:block;}
+
+    /* Move modal */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(44,33,24,0.3);z-index:300;align-items:center;justify-content:center;}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:#fff;border-radius:16px;padding:2rem;width:90%;max-width:340px;box-shadow:0 12px 48px rgba(107,79,58,0.18);}
+    .modal-box h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:500;color:var(--bark);margin-bottom:0.3rem;}
+    .modal-box p{font-size:0.75rem;color:var(--bark);opacity:0.5;margin-bottom:1rem;font-style:italic;}
+    .modal-actions{display:flex;gap:0.6rem;margin-top:1.1rem;}
+    .btn{padding:0.6rem 1.2rem;font-family:'Inter',sans-serif;font-size:0.62rem;font-weight:500;
+      letter-spacing:0.16em;text-transform:uppercase;border:none;cursor:pointer;transition:all 0.2s;}
+    .btn-primary{background:var(--bark);color:var(--cream);flex:1;}
+    .btn-primary:hover{background:var(--clay);}
+    .btn-ghost{background:transparent;color:var(--bark);border:1.5px solid rgba(107,79,58,0.2);flex:1;}
+    .btn-ghost:hover{background:var(--bark);color:var(--cream);}
+
+    .empty{text-align:center;padding:3rem;font-family:'Cormorant Garamond',serif;
+      font-style:italic;font-size:1rem;color:var(--bark);opacity:0.3;}
+
+    /* Toast */
+    .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--bark);color:var(--cream);
+      padding:0.75rem 1.3rem;font-size:0.75rem;letter-spacing:0.05em;z-index:999;
+      animation:toastIn 0.25s ease;box-shadow:0 4px 20px rgba(107,79,58,0.2);}
+    @keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</head>
+<body>
+
+  <nav class="top-nav">
+    <button class="nav-ham" id="navHamburger"><span></span><span></span><span></span></button>
+    <a href="tree.html" class="nav-brand">Chumchi</a>
+    <div class="nav-right">
+      <a href="upload.html" class="nav-link">+ Upload</a>
+      <button class="nav-link" onclick="doLogout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="page">
+    <a href="tree.html" class="back-link">← Back to Tree</a>
+    <div class="member-header" id="memberHeader"><div class="loading">Loading…</div></div>
+    <div id="recipeGrid" class="recipe-grid"></div>
+    <div id="recipeDetail" class="recipe-detail"></div>
+  </div>
+
+  <!-- Move modal -->
+  <div class="modal-overlay" id="moveModal">
+    <div class="modal-box">
+      <h3>Move Recipe</h3>
+      <p>Reassign this recipe to another family member.</p>
+      <div style="margin-bottom:0.5rem;">
+        <label style="font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--bark);opacity:0.5;display:block;margin-bottom:0.35rem;">Assign To</label>
+        <select id="moveTarget" style="width:100%;padding:0.7rem 0.85rem;background:var(--cream);border:1px solid rgba(107,79,58,0.18);color:var(--ink);font-family:'Cormorant Garamond',serif;font-size:0.92rem;outline:none;appearance:none;"></select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeMove()">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmMove()">Move</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/supabase.js"></script>
+  <script src="../assets/app.js"></script>
+  <script src="../assets/nav.js"></script>
+  <script>
+    if (sessionStorage.getItem('chumchi_site') !== 'true') window.location.href = '../index.html';
+    const sess = JSON.parse(sessionStorage.getItem('chumchi_session') || 'null');
+    if (!sess) window.location.href = '../platform/login.html';
+    if (typeof buildSidebar === 'function') buildSidebar('recipes', sess?.role);
+    function doLogout(){ sessionStorage.clear(); window.location.href='../index.html'; }
+
+    const params   = new URLSearchParams(window.location.search);
+    const memberId = params.get('member') || sess?.memberId || 'meher';
+    const family   = sess?.family || 'rafiq';
+
+    const MEMBERS  = (typeof TREE !== 'undefined') ? TREE[family]?.members || {} : {};
+    const member   = MEMBERS[memberId] || { name: memberId, role: '' };
+
+    let recipes  = [];
+    let allMembers = [];
+    let openId   = null;
+    let moveId   = null;
+
+    const AVATAR_COLORS = ['#F2C4B0','#C8D8C0','#F0C070','#D4C0D8','#FDF6EC'];
+
+    function formatDate(d){ return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+    function toast(msg){ const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3200); }
+
+    function renderHeader(){
+      const col = AVATAR_COLORS[memberId.length % AVATAR_COLORS.length];
+      document.getElementById('memberHeader').innerHTML = `
+        <div class="member-avatar" style="background:${col};">
+          <span>${member.name[0]}</span>
+        </div>
+        <div class="member-info">
+          <h1>${member.name}</h1>
+          <p>${member.role} · ${recipes.length} recipe${recipes.length!==1?'s':''}</p>
+        </div>`;
+    }
+
+    function renderGrid(){
+      const grid   = document.getElementById('recipeGrid');
+      const detail = document.getElementById('recipeDetail');
+      if (!recipes.length){
+        grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+          No recipes yet.
+          <br/><a href="upload.html?member=${memberId}" style="display:inline-block;margin-top:1rem;padding:0.6rem 1.2rem;background:var(--bark);color:var(--cream);font-size:0.62rem;letter-spacing:0.16em;text-transform:uppercase;text-decoration:none;">Upload First</a>
+        </div>`;
+        return;
+      }
+      grid.innerHTML = recipes.map(r => `
+        <div class="recipe-card ${openId===r.id?'open':''}" id="card-${r.id}" onclick="toggleDetail('${r.id}')">
+          <button class="rc-move" onclick="event.stopPropagation();openMove('${r.id}')">⇌ Move</button>
+          <div class="rc-title">${r.title}</div>
+          <div class="rc-tags">${(r.tags||[]).map(t=>`<span class="recipe-tag">${t}</span>`).join('')}</div>
+          <div class="rc-meta">Uploaded ${formatDate(r.uploadDate)}</div>
+        </div>`).join('');
+
+      if (openId) renderDetail(openId);
+    }
+
+    function toggleDetail(id){
+      const detail = document.getElementById('recipeDetail');
+      if (openId === id){
+        openId = null;
+        detail.classList.remove('visible');
+        detail.innerHTML = '';
+        document.querySelectorAll('.recipe-card').forEach(c=>c.classList.remove('open'));
+        return;
+      }
+      openId = id;
+      document.querySelectorAll('.recipe-card').forEach(c=>c.classList.remove('open'));
+      document.getElementById('card-'+id)?.classList.add('open');
+      renderDetail(id);
+      setTimeout(()=>detail.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+    }
+
+    function renderDetail(id){
+      const r = recipes.find(x=>x.id===id);
+      if (!r) return;
+      const detail = document.getElementById('recipeDetail');
+      detail.classList.add('visible');
+      document.getElementById('recipeGrid').after(detail);
+
+      const uploader = allMembers.find(m=>m.id===r.uploadedBy);
+
+      detail.innerHTML = `
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.4rem;">
+          <div>
+            <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:400;letter-spacing:0.1em;color:var(--bark);">${r.title}</h2>
+            <div style="margin-top:0.3rem;">${(r.tags||[]).map(t=>`<span class="recipe-tag">${t}</span>`).join('')}</div>
+            <div style="font-size:0.62rem;color:var(--clay);opacity:0.65;margin-top:0.4rem;font-style:italic;">
+              ${uploader ? uploader.name+' uploaded · ' : ''}${formatDate(r.uploadDate)}
+            </div>
+          </div>
+          <button onclick="openMove('${r.id}')" style="padding:0.4rem 0.9rem;background:transparent;border:1.5px solid rgba(107,79,58,0.2);color:var(--bark);font-family:'Inter',sans-serif;font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;">⇌ Move</button>
+        </div>
+        ${r.imageUrl ? `<img src="${r.imageUrl}" class="recipe-img" alt="${r.title}"/>` : ''}
+        <div class="detail-grid">
+          <div class="detail-section">
+            <h3>Ingredients</h3>
+            <ul>${(r.ingredients||[]).map(i=>`<li>${i}</li>`).join('')}</ul>
+          </div>
+          <div class="detail-section">
+            <h3>Method</h3>
+            <ol class="steps-list">${(r.steps||[]).map(s=>`<li>${s}</li>`).join('')}</ol>
+          </div>
+        </div>
+        <div class="raw-toggle">
+          <button class="raw-btn" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'− Hide Source':'+ View Raw Source'">+ View Raw Source</button>
+          <div class="raw-note">${r.rawNote || 'Original handwritten scan.'}</div>
+        </div>`;
+    }
+
+    // Move recipe
+    function openMove(id){
+      moveId = id;
+      const sel = document.getElementById('moveTarget');
+      sel.innerHTML = allMembers.map(m=>`<option value="${m.id}" ${m.id===memberId?'selected':''}>${m.name} (${m.role})</option>`).join('');
+      document.getElementById('moveModal').classList.add('open');
+    }
+    function closeMove(){ document.getElementById('moveModal').classList.remove('open'); moveId=null; }
+    async function confirmMove(){
+      const target = document.getElementById('moveTarget').value;
+      const ok = await dbMoveRecipe(moveId, target);
+      if (ok){
+        const m = allMembers.find(x=>x.id===target);
+        toast(`Recipe moved to ${m?.name||target}`);
+        recipes = recipes.filter(r=>r.id!==moveId);
+        if (openId===moveId){ openId=null; document.getElementById('recipeDetail').classList.remove('visible'); }
+        renderHeader(); renderGrid();
+      } else {
+        toast('Move failed — check connection.');
+      }
+      closeMove();
+    }
+
+    // Load everything from Supabase
+    sbReady(async () => {
+      allMembers = await dbGetMembers(family);
+
+      // Populate move dropdown
+      const sel = document.getElementById('moveTarget');
+      if (sel) sel.innerHTML = allMembers.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+
+      const rows = await dbGetMemberRecipes(memberId);
+      recipes = rows.map(normaliseRecipe);
+
+      renderHeader();
+      renderGrid();
+    });
+  </script>
+</body>
+</html>

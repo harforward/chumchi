@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chumchi — Upload Recipe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root { --cream:#FDF6EC;--blush:#F2C4B0;--sage:#C8D8C0;--saffron:#F0C070;--lilac:#D4C0D8;--clay:#C4785A;--bark:#6B4F3A;--ink:#2C2118; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--cream);font-family:'Inter',sans-serif;color:var(--ink);min-height:100vh;}
+
+    .top-nav{height:52px;display:flex;align-items:center;padding:0 1.5rem;gap:1rem;
+      background:rgba(253,246,236,0.95);backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(107,79,58,0.08);position:sticky;top:0;z-index:100;}
+    .nav-ham{width:36px;height:36px;border:none;background:none;cursor:pointer;
+      display:flex;flex-direction:column;justify-content:center;gap:5px;padding:4px;border-radius:6px;}
+    .nav-ham span{display:block;height:1.5px;background:var(--bark);border-radius:2px;}
+    .nav-brand{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;
+      letter-spacing:0.26em;text-transform:uppercase;color:var(--bark);text-decoration:none;}
+    .nav-right{margin-left:auto;display:flex;align-items:center;gap:1rem;}
+    .nav-link{font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;
+      color:var(--bark);opacity:0.45;text-decoration:none;cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif;}
+    .nav-link:hover{opacity:0.9;}
+
+    .page{max-width:660px;margin:0 auto;padding:2rem 1.2rem 5rem;}
+
+    .back-link{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.62rem;
+      letter-spacing:0.16em;text-transform:uppercase;color:var(--bark);opacity:0.38;
+      text-decoration:none;margin-bottom:1.5rem;transition:opacity 0.2s;}
+    .back-link:hover{opacity:0.85;}
+
+    .page-title{margin-bottom:2rem;}
+    .page-title h1{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;
+      letter-spacing:0.18em;text-transform:uppercase;color:var(--bark);}
+    .page-title p{font-family:'Cormorant Garamond',serif;font-style:italic;
+      font-size:0.82rem;color:var(--clay);opacity:0.7;margin-top:0.3rem;}
+
+    .card{background:#fff;border-radius:16px;padding:1.8rem;box-shadow:0 2px 20px rgba(107,79,58,0.08);margin-bottom:1.2rem;}
+
+    .section-label{font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;
+      color:var(--bark);opacity:0.45;display:block;margin-bottom:0.8rem;}
+
+    /* Upload zone */
+    .upload-zone{border:2px dashed rgba(196,120,90,0.28);border-radius:12px;
+      padding:2.4rem 1.5rem;text-align:center;cursor:pointer;transition:all 0.22s;
+      background:rgba(253,246,236,0.5);}
+    .upload-zone:hover,.upload-zone.drag{border-color:var(--clay);background:rgba(242,196,176,0.10);}
+    .upload-zone input{display:none;}
+    .upload-icon{font-size:1.8rem;margin-bottom:0.5rem;opacity:0.4;}
+    .upload-zone p{font-size:0.8rem;color:var(--bark);opacity:0.5;margin-bottom:0.2rem;}
+    .upload-zone .hint{font-size:0.62rem;opacity:0.35;letter-spacing:0.06em;}
+
+    .preview-strip{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.9rem;}
+    .preview-thumb{width:68px;height:68px;border-radius:8px;object-fit:cover;
+      border:2px solid rgba(107,79,58,0.10);box-shadow:0 1px 8px rgba(107,79,58,0.08);}
+
+    /* AI status */
+    .ai-status{display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;
+      border-radius:8px;font-size:0.76rem;color:var(--bark);margin:1rem 0;transition:all 0.2s;}
+    .ai-status.idle   {background:rgba(200,216,192,0.2);}
+    .ai-status.busy   {background:rgba(240,192,112,0.2);}
+    .ai-status.done   {background:rgba(200,216,192,0.35);}
+    .ai-status.error  {background:rgba(242,196,176,0.35);}
+    .ai-dot{width:8px;height:8px;border-radius:50%;background:var(--sage);flex-shrink:0;}
+    .ai-status.busy .ai-dot{background:var(--saffron);animation:pulse 1s ease-in-out infinite;}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
+
+    /* Form fields */
+    .field-group{margin-bottom:1rem;}
+    .field-label{display:block;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;
+      color:var(--bark);opacity:0.5;margin-bottom:0.35rem;}
+    .field-input{width:100%;padding:0.78rem 0.9rem;background:var(--cream);
+      border:1px solid rgba(107,79,58,0.16);color:var(--ink);font-family:'Cormorant Garamond',serif;
+      font-size:0.95rem;outline:none;border-radius:0;transition:border-color 0.2s;appearance:none;}
+    .field-input:focus{border-color:var(--clay);box-shadow:0 0 0 2px rgba(196,120,90,0.08);}
+    .field-input::placeholder{color:var(--bark);opacity:0.28;font-style:italic;}
+    textarea.field-input{resize:vertical;min-height:90px;line-height:1.6;font-size:0.88rem;}
+    select.field-input{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236B4F3A'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 0.9rem center;background-color:var(--cream);padding-right:2rem;}
+
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;}
+    @media(max-width:520px){.two-col{grid-template-columns:1fr;}}
+
+    /* Tag chips */
+    .tag-wrap{display:flex;flex-wrap:wrap;gap:0.4rem;padding:0.5rem;
+      border:1px solid rgba(107,79,58,0.16);background:var(--cream);min-height:42px;align-items:center;cursor:text;}
+    .tag-chip{display:inline-flex;align-items:center;gap:0.25rem;padding:0.18rem 0.55rem;
+      border-radius:20px;background:var(--sage);font-size:0.68rem;color:var(--bark);font-weight:500;}
+    .tag-chip button{background:none;border:none;cursor:pointer;font-size:0.75rem;color:var(--bark);opacity:0.5;padding:0;}
+    .tag-chip button:hover{opacity:1;}
+    .tag-wrap input{border:none;outline:none;font-size:0.78rem;color:var(--ink);font-family:'Inter',sans-serif;
+      flex:1;min-width:80px;background:transparent;}
+
+    .btn-row{display:flex;gap:0.7rem;margin-top:1.4rem;}
+    .btn{padding:0.82rem 1.6rem;font-family:'Inter',sans-serif;font-size:0.65rem;font-weight:500;
+      letter-spacing:0.18em;text-transform:uppercase;border:none;cursor:pointer;transition:all 0.2s;}
+    .btn-primary{background:var(--bark);color:var(--cream);}
+    .btn-primary:hover{background:var(--clay);}
+    .btn-primary:disabled{opacity:0.45;cursor:not-allowed;}
+    .btn-ghost{background:transparent;color:var(--bark);border:1.5px solid rgba(107,79,58,0.22);}
+    .btn-ghost:hover{background:var(--bark);color:var(--cream);}
+
+    .save-msg{font-size:0.72rem;font-style:italic;color:var(--clay);margin-top:0.5rem;min-height:1rem;}
+
+    /* Parse btn */
+    .parse-btn{width:100%;padding:0.78rem;background:rgba(196,120,90,0.14);
+      border:1.5px solid rgba(196,120,90,0.28);color:var(--bark);font-family:'Inter',sans-serif;
+      font-size:0.65rem;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;
+      cursor:pointer;transition:all 0.2s;}
+    .parse-btn:hover{background:rgba(196,120,90,0.28);}
+    .parse-btn:disabled{opacity:0.4;cursor:not-allowed;}
+  </style>
+</head>
+<body>
+
+  <nav class="top-nav">
+    <button class="nav-ham" id="navHamburger"><span></span><span></span><span></span></button>
+    <a href="tree.html" class="nav-brand">Chumchi</a>
+    <div class="nav-right">
+      <a href="tree.html" class="nav-link">Tree</a>
+      <button class="nav-link" onclick="doLogout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="page">
+    <a href="tree.html" class="back-link">← Back to Tree</a>
+
+    <div class="page-title">
+      <h1>Upload a Recipe</h1>
+      <p>Photograph a handwritten card or scan — Claude reads and formats it. Saved permanently.</p>
+    </div>
+
+    <!-- Step 1: Photo -->
+    <div class="card">
+      <span class="section-label">Step 1 — Photo or Scan</span>
+      <div class="upload-zone" id="uploadZone"
+           ondragover="ev.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="handleDrop(event)"
+           onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept="image/*,application/pdf" multiple onchange="handleFiles(this.files)"/>
+        <div class="upload-icon">📄</div>
+        <p>Drop recipe scan here or tap to browse</p>
+        <p class="hint">JPG · PNG · PDF · Multiple pages OK</p>
+      </div>
+      <div class="preview-strip" id="previewStrip"></div>
+
+      <div id="aiSection" style="display:none;margin-top:0.8rem;">
+        <div class="ai-status idle" id="aiStatus">
+          <div class="ai-dot"></div>
+          <span id="aiText">Ready to read your recipe</span>
+        </div>
+        <button class="parse-btn" id="parseBtn" onclick="parseRecipe()">✦ Read & Format with AI</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Edit -->
+    <div class="card" id="editCard" style="display:none;">
+      <span class="section-label">Step 2 — Review & Edit</span>
+
+      <div class="field-group">
+        <label class="field-label">Recipe Title</label>
+        <input class="field-input" id="f-title" type="text" placeholder="e.g. Kabab"/>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Ingredients — one per line</label>
+        <textarea class="field-input" id="f-ingredients" placeholder="1 lb ground beef&#10;Adrak lassan&#10;Masala…"></textarea>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Method / Steps — one per line</label>
+        <textarea class="field-input" id="f-steps" style="min-height:130px;" placeholder="1. Wash the keema&#10;2. Mix with spices…"></textarea>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Tags</label>
+        <div class="tag-wrap" id="tagWrap" onclick="document.getElementById('tagInput').focus()">
+          <input type="text" id="tagInput" placeholder="type tag + Enter" onkeydown="handleTag(event)"/>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="field-group">
+          <label class="field-label">Assign To (family member)</label>
+          <select class="field-input" id="f-assignedTo"></select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Uploaded By</label>
+          <select class="field-input" id="f-uploadedBy"></select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Raw Source Note</label>
+        <input class="field-input" id="f-rawNote" type="text" placeholder="e.g. Page 3 of Nani's notebook"/>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="resetForm()">Start Over</button>
+        <button class="btn btn-primary" id="saveBtn" onclick="saveRecipe()">Save to Tree</button>
+      </div>
+      <p class="save-msg" id="saveMsg"></p>
+    </div>
+  </div>
+
+  <script src="../assets/supabase.js"></script>
+  <script src="../assets/app.js"></script>
+  <script src="../assets/nav.js"></script>
+  <script>
+    if (sessionStorage.getItem('chumchi_site') !== 'true') window.location.href = '../index.html';
+    const sess = JSON.parse(sessionStorage.getItem('chumchi_session') || 'null');
+    if (!sess) window.location.href = '../platform/login.html';
+    if (typeof buildSidebar === 'function') buildSidebar('upload', sess?.role);
+    function doLogout() { sessionStorage.clear(); window.location.href = '../index.html'; }
+
+    const params   = new URLSearchParams(window.location.search);
+    const forMember = params.get('member') || sess?.memberId || '';
+    const family    = sess?.family || 'rafiq';
+
+    let uploadedFiles = [];
+    let tags = [];
+
+    // Populate member dropdowns from Supabase
+    sbReady(async () => {
+      const members = await dbGetMembers(family);
+      const assignSel   = document.getElementById('f-assignedTo');
+      const uploadedSel = document.getElementById('f-uploadedBy');
+      members.forEach(m => {
+        const optA = new Option(m.name + ' (' + m.role + ')', m.id);
+        const optB = new Option(m.name + ' (' + m.role + ')', m.id);
+        if (m.id === forMember) { optA.selected = true; }
+        if (m.id === (sess?.memberId || '')) { optB.selected = true; }
+        assignSel.appendChild(optA);
+        uploadedSel.appendChild(optB);
+      });
+    });
+
+    // File handling
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('uploadZone').classList.remove('drag');
+      handleFiles(e.dataTransfer.files);
+    }
+
+    function handleFiles(files) {
+      uploadedFiles = Array.from(files);
+      const strip = document.getElementById('previewStrip');
+      strip.innerHTML = '';
+      uploadedFiles.forEach(f => {
+        if (f.type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.className = 'preview-thumb';
+          img.src = URL.createObjectURL(f);
+          strip.appendChild(img);
+        }
+      });
+      document.getElementById('aiSection').style.display = 'block';
+      setStatus('idle', 'Ready to read your recipe');
+    }
+
+    function setStatus(type, msg) {
+      const el = document.getElementById('aiStatus');
+      el.className = 'ai-status ' + type;
+      document.getElementById('aiText').textContent = msg;
+    }
+
+    // AI parse
+    async function parseRecipe() {
+      if (!uploadedFiles.length) return;
+      const btn = document.getElementById('parseBtn');
+      btn.disabled = true;
+      setStatus('busy', 'Claude is reading your handwritten recipe…');
+
+      try {
+        const file   = uploadedFiles[0];
+        const base64 = await toBase64(file);
+
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 1000,
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'image', source: { type: 'base64', media_type: file.type || 'image/jpeg', data: base64 } },
+                { type: 'text', text: `Read this handwritten recipe. Return ONLY valid JSON, no markdown:
+{"title":"...","ingredients":["..."],"steps":["..."],"tags":["..."]}
+Keep Urdu/Hindi terms (gosht, keema, adrak lassan, peeaz, dahi, pudina, zeera, atta, thel) with brief English notes in parentheses.` }
+              ]
+            }]
+          })
+        });
+
+        const data   = await res.json();
+        const text   = (data.content || []).map(c => c.text || '').join('');
+        const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+
+        document.getElementById('f-title').value       = parsed.title || '';
+        document.getElementById('f-ingredients').value = (parsed.ingredients || []).join('\n');
+        document.getElementById('f-steps').value       = (parsed.steps || []).join('\n');
+        tags = parsed.tags || [];
+        renderTags();
+
+        setStatus('done', 'Recipe read — review and edit below.');
+        document.getElementById('editCard').style.display = 'block';
+        document.getElementById('editCard').scrollIntoView({ behavior:'smooth', block:'start' });
+
+      } catch(err) {
+        console.error(err);
+        setStatus('error', 'Could not auto-read — fill in the form below.');
+        document.getElementById('editCard').style.display = 'block';
+      }
+      btn.disabled = false;
+      btn.textContent = '✦ Re-read Recipe';
+    }
+
+    function toBase64(file) {
+      return new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result.split(',')[1]);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+    }
+
+    // Tags
+    function handleTag(e) {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const v = e.target.value.trim().replace(/,/g,'');
+        if (v && !tags.includes(v)) { tags.push(v); renderTags(); }
+        e.target.value = '';
+      }
+    }
+    function removeTag(t) { tags = tags.filter(x => x !== t); renderTags(); }
+    function renderTags() {
+      const wrap  = document.getElementById('tagWrap');
+      const input = document.getElementById('tagInput');
+      wrap.innerHTML = '';
+      tags.forEach(t => {
+        const chip = document.createElement('div');
+        chip.className = 'tag-chip';
+        chip.innerHTML = `${t}<button onclick="removeTag('${t}')">×</button>`;
+        wrap.appendChild(chip);
+      });
+      wrap.appendChild(input);
+    }
+
+    // Save to Supabase
+    async function saveRecipe() {
+      const title = document.getElementById('f-title').value.trim();
+      if (!title) { document.getElementById('saveMsg').textContent = 'Please add a title.'; return; }
+
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+      document.getElementById('saveMsg').textContent = '';
+
+      // Upload image first if present
+      let imageUrl = null;
+      if (uploadedFiles.length > 0 && uploadedFiles[0].type.startsWith('image/')) {
+        const path = `${family}/${Date.now()}_${uploadedFiles[0].name.replace(/\s/g,'_')}`;
+        imageUrl = await dbUploadImage(uploadedFiles[0], path);
+      }
+
+      const recipe = {
+        familyId:   family,
+        title,
+        ingredients: document.getElementById('f-ingredients').value.split('\n').map(s=>s.trim()).filter(Boolean),
+        steps:       document.getElementById('f-steps').value.split('\n').map(s=>s.trim()).filter(Boolean),
+        tags,
+        assignedTo:  document.getElementById('f-assignedTo').value,
+        uploadedBy:  document.getElementById('f-uploadedBy').value,
+        rawNote:     document.getElementById('f-rawNote').value.trim(),
+        imageUrl,
+      };
+
+      const saved = await dbSaveRecipe(recipe);
+
+      if (saved) {
+        document.getElementById('saveMsg').textContent = `"${title}" saved successfully.`;
+        btn.textContent = 'Saved ✓';
+        setTimeout(() => {
+          window.location.href = `recipe.html?member=${recipe.assignedTo}`;
+        }, 1200);
+      } else {
+        document.getElementById('saveMsg').textContent = 'Save failed — check your connection.';
+        btn.disabled = false;
+        btn.textContent = 'Save to Tree';
+      }
+    }
+
+    function resetForm() {
+      uploadedFiles = []; tags = [];
+      document.getElementById('previewStrip').innerHTML = '';
+      document.getElementById('aiSection').style.display = 'none';
+      document.getElementById('editCard').style.display = 'none';
+      ['f-title','f-ingredients','f-steps','f-rawNote'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      renderTags();
+    }
+  </script>
+</body>
+</html>
