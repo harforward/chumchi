@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chumchi — Family Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--cream:#FDF6EC;--blush:#F2C4B0;--sage:#C8D8C0;--saffron:#F0C070;--lilac:#D4C0D8;--clay:#C4785A;--bark:#6B4F3A;--ink:#2C2118;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--cream);font-family:'Inter',sans-serif;color:var(--ink);min-height:100vh;}
+
+    .top-nav{height:52px;display:flex;align-items:center;padding:0 1.5rem;gap:1rem;
+      background:rgba(253,246,236,0.95);backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(107,79,58,0.08);position:sticky;top:0;z-index:100;}
+    .nav-ham{width:36px;height:36px;border:none;background:none;cursor:pointer;
+      display:flex;flex-direction:column;justify-content:center;gap:5px;padding:4px;}
+    .nav-ham span{display:block;height:1.5px;background:var(--bark);border-radius:2px;}
+    .nav-brand{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;
+      letter-spacing:0.26em;text-transform:uppercase;color:var(--bark);text-decoration:none;}
+    .nav-right{margin-left:auto;display:flex;gap:1rem;align-items:center;}
+    .nav-link{font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;
+      color:var(--bark);opacity:0.42;cursor:pointer;background:none;border:none;
+      font-family:'Inter',sans-serif;transition:opacity 0.2s;}
+    .nav-link:hover{opacity:0.9;}
+    .pending-dot {
+      display:inline-block;width:8px;height:8px;border-radius:50%;
+      background:#e8a800;margin-left:6px;vertical-align:middle;
+      box-shadow:0 0 0 0 rgba(232,168,0,0.4);
+      animation:pendingPulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pendingPulse {
+      0%{box-shadow:0 0 0 0 rgba(232,168,0,0.4);}
+      70%{box-shadow:0 0 0 8px rgba(232,168,0,0);}
+      100%{box-shadow:0 0 0 0 rgba(232,168,0,0);}
+    }
+    .pending-badge{display:inline-flex;align-items:center;justify-content:center;
+      min-width:18px;height:18px;border-radius:9px;background:#e8a800;color:#fff;
+      font-size:0.6rem;font-weight:700;padding:0 4px;margin-left:0.3rem;}
+
+    .page{max-width:900px;margin:0 auto;padding:2rem 1.2rem 5rem;}
+
+    /* Tab bar */
+    .tab-bar{display:flex;border-bottom:1px solid rgba(107,79,58,0.12);margin-bottom:2rem;gap:0;}
+    .tab-btn{padding:0.7rem 1.2rem;font-family:'Inter',sans-serif;font-size:0.62rem;
+      font-weight:500;letter-spacing:0.14em;text-transform:uppercase;
+      color:rgba(107,79,58,0.45);background:none;border:none;border-bottom:2px solid transparent;
+      cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:0.3rem;}
+    .tab-btn.active{color:var(--bark);border-bottom-color:var(--clay);}
+    .tab-btn:hover:not(.active){color:var(--bark);}
+
+    .tab-panel{display:none;}
+    .tab-panel.active{display:block;}
+
+    /* Section title */
+    .section-head{display:flex;align-items:flex-end;justify-content:space-between;
+      flex-wrap:wrap;gap:1rem;margin-bottom:1.4rem;}
+    .section-head h2{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;
+      letter-spacing:0.16em;text-transform:uppercase;color:var(--bark);}
+    .section-head p{font-family:'Cormorant Garamond',serif;font-style:italic;
+      font-size:0.78rem;color:var(--clay);opacity:0.7;margin-top:0.15rem;}
+
+    /* Cards */
+    .item-list{display:flex;flex-direction:column;gap:0.8rem;}
+
+    .item-card{background:#fff;border-radius:12px;padding:1.3rem 1.4rem;
+      box-shadow:0 2px 14px rgba(107,79,58,0.07);border-left:3px solid var(--saffron);}
+    .item-card.approved{border-left-color:var(--sage);}
+    .item-card.rejected{border-left-color:var(--blush);opacity:0.6;}
+
+    .item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:0.6rem;}
+    .item-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;color:var(--bark);letter-spacing:0.04em;}
+    .item-meta{font-size:0.65rem;color:var(--clay);opacity:0.7;margin-top:0.15rem;letter-spacing:0.04em;}
+
+    .status-pill{flex-shrink:0;padding:0.2rem 0.65rem;border-radius:20px;font-size:0.58rem;
+      font-weight:500;letter-spacing:0.12em;text-transform:uppercase;}
+    .status-pill.pending {background:rgba(240,192,112,0.2);color:#8a6800;}
+    .status-pill.approved{background:rgba(200,216,192,0.3);color:#2a5a2a;}
+    .status-pill.rejected{background:rgba(242,196,176,0.3);color:#8a2a2a;}
+
+    .item-detail{font-size:0.76rem;color:var(--ink);line-height:1.5;margin-bottom:0.8rem;}
+    .item-detail span{font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--bark);opacity:0.45;margin-right:0.4rem;}
+
+    .act-row{display:flex;gap:0.5rem;flex-wrap:wrap;}
+    .act-btn{padding:0.38rem 0.9rem;font-family:'Inter',sans-serif;font-size:0.6rem;
+      font-weight:500;letter-spacing:0.12em;text-transform:uppercase;border:none;cursor:pointer;transition:all 0.2s;}
+    .act-approve{background:var(--sage);color:var(--bark);}
+    .act-approve:hover{background:#a8c8a0;}
+    .act-reject{background:var(--blush);color:var(--bark);}
+    .act-reject:hover{background:#e8a890;}
+    .act-view{background:var(--cream);color:var(--bark);border:1px solid rgba(107,79,58,0.18);}
+    .act-view:hover{background:rgba(107,79,58,0.08);}
+
+    /* Members table */
+    .members-table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;
+      overflow:hidden;box-shadow:0 2px 14px rgba(107,79,58,0.07);}
+    .members-table th{font-size:0.58rem;letter-spacing:0.16em;text-transform:uppercase;
+      color:var(--clay);opacity:0.7;padding:0.75rem 1rem;text-align:left;
+      background:var(--cream);border-bottom:1px solid rgba(107,79,58,0.08);}
+    .members-table td{font-size:0.8rem;color:var(--ink);padding:0.75rem 1rem;
+      border-bottom:1px solid rgba(107,79,58,0.05);vertical-align:middle;}
+    .members-table tr:last-child td{border-bottom:none;}
+    .members-table tr:hover td{background:rgba(253,246,236,0.6);}
+
+    .role-pill{display:inline-block;padding:0.16rem 0.55rem;border-radius:20px;
+      font-size:0.58rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;
+      background:var(--blush);color:var(--bark);}
+
+    /* Add member form */
+    .add-form{background:#fff;border-radius:12px;padding:1.5rem;
+      box-shadow:0 2px 14px rgba(107,79,58,0.07);margin-bottom:1.4rem;display:none;}
+    .add-form.open{display:block;}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:1rem;}
+    @media(max-width:540px){.form-grid{grid-template-columns:1fr;}}
+    .field-label{display:block;font-size:0.58rem;letter-spacing:0.16em;text-transform:uppercase;
+      color:var(--bark);opacity:0.5;margin-bottom:0.3rem;}
+    .field-input{width:100%;padding:0.72rem 0.85rem;background:var(--cream);
+      border:1px solid rgba(107,79,58,0.16);color:var(--ink);font-family:'Cormorant Garamond',serif;
+      font-size:0.92rem;outline:none;border-radius:0;transition:border-color 0.2s;appearance:none;}
+    .field-input:focus{border-color:var(--clay);}
+    .field-input::placeholder{color:var(--bark);opacity:0.28;font-style:italic;}
+    select.field-input{cursor:pointer;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236B4F3A'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 0.85rem center;
+      background-color:var(--cream);padding-right:2rem;}
+
+    .btn{padding:0.7rem 1.4rem;font-family:'Inter',sans-serif;font-size:0.62rem;font-weight:500;
+      letter-spacing:0.16em;text-transform:uppercase;border:none;cursor:pointer;transition:all 0.2s;}
+    .btn-primary{background:var(--bark);color:var(--cream);}
+    .btn-primary:hover{background:var(--clay);}
+    .btn-ghost{background:transparent;color:var(--bark);border:1.5px solid rgba(107,79,58,0.2);}
+    .btn-ghost:hover{background:var(--bark);color:var(--cream);}
+
+    .empty{text-align:center;padding:2.5rem;font-family:'Cormorant Garamond',serif;
+      font-style:italic;color:var(--bark);opacity:0.3;}
+
+    .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--bark);color:var(--cream);
+      padding:0.75rem 1.3rem;font-size:0.75rem;letter-spacing:0.05em;z-index:999;
+      animation:toastIn 0.25s ease;box-shadow:0 4px 20px rgba(107,79,58,0.2);}
+    @keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</head>
+<body>
+
+  <nav class="top-nav">
+    <button class="nav-ham" id="navHamburger"><span></span><span></span><span></span></button>
+    <a href="#" class="nav-brand">Chumchi</a>
+    <div class="nav-right">
+      <span id="pendingNav" style="display:none;font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:#8a6800;cursor:pointer;" onclick="switchTab('pending')">
+        Pending <span class="pending-badge" id="pendingNavCount">0</span>
+      </span>
+      <button class="nav-link" onclick="doLogout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button class="tab-btn" id="tbtn-pending"  onclick="switchTab('pending')">
+        Pending <span class="pending-dot" id="pendingDot" style="display:none;"></span>
+      </button>
+      <button class="tab-btn active" id="tbtn-members"  onclick="switchTab('members')">Members</button>
+      <button class="tab-btn" id="tbtn-recipes"  onclick="switchTab('recipes')">All Recipes</button>
+    </div>
+
+    <!-- ── PENDING TAB ── -->
+    <div class="tab-panel" id="panel-pending">
+      <div class="section-head">
+        <div><h2>Pending Approvals</h2><p>Recipes and members awaiting your review</p></div>
+      </div>
+
+      <h3 style="font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--bark);opacity:0.4;margin-bottom:0.8rem;">Recipes</h3>
+      <div class="item-list" id="pendingRecipes"><div class="empty">Loading…</div></div>
+
+      <h3 style="font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--bark);opacity:0.4;margin-top:2rem;margin-bottom:0.8rem;">Member Requests</h3>
+      <div class="item-list" id="pendingMembers"><div class="empty">Loading…</div></div>
+    </div>
+
+    <!-- ── MEMBERS TAB ── -->
+    <div class="tab-panel active" id="panel-members">
+      <div class="section-head">
+        <div><h2>Family Members</h2><p>Manage access and credentials</p></div>
+        <button class="btn btn-primary" onclick="toggleAddForm()">+ Add Member</button>
+      </div>
+
+      <!-- Add member form -->
+      <div class="add-form" id="addMemberForm">
+        <div class="form-grid">
+          <div>
+            <label class="field-label">Full Name</label>
+            <input class="field-input" id="nm-name" type="text" placeholder="First Last" autocomplete="off"/>
+          </div>
+          <div>
+            <label class="field-label">Relation / Role</label>
+            <input class="field-input" id="nm-role" type="text" placeholder="e.g. Cousin, Uncle"/>
+          </div>
+          <div>
+            <label class="field-label">Username (for login)</label>
+            <input class="field-input" id="nm-username" type="text" placeholder="firstnamelastname" autocomplete="off"/>
+          </div>
+          <div>
+            <label class="field-label">Password</label>
+            <input class="field-input" id="nm-pwd" type="text" placeholder="Name2026"/>
+          </div>
+          <div>
+            <label class="field-label">Generation</label>
+            <select class="field-input" id="nm-gen">
+              <option value="0">Grandparents</option>
+              <option value="1">Parents / Their siblings</option>
+              <option value="2" selected>Our Generation</option>
+              <option value="3">Next Generation</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.6rem;">
+          <button class="btn btn-ghost" onclick="toggleAddForm()">Cancel</button>
+          <button class="btn btn-primary" onclick="addMember()">Add to Family</button>
+        </div>
+        <p id="addMemberMsg" style="font-size:0.7rem;font-style:italic;color:var(--clay);margin-top:0.5rem;min-height:1rem;"></p>
+      </div>
+
+      <table class="members-table" id="membersTable">
+        <thead><tr>
+          <th>Name</th><th>Role</th><th>Username</th><th>Generation</th><th>Recipes</th>
+        </tr></thead>
+        <tbody id="membersTbody"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- ── ALL RECIPES TAB ── -->
+    <div class="tab-panel" id="panel-recipes">
+      <div class="section-head">
+        <div><h2>All Recipes</h2><p>Every recipe in your family tree</p></div>
+      </div>
+      <div class="item-list" id="allRecipesList"><div class="empty">Loading…</div></div>
+    </div>
+
+  </div>
+
+  <script src="../assets/supabase.js"></script>
+  <script src="../assets/app.js"></script>
+  <script src="../assets/nav.js"></script>
+  <script>
+    if (sessionStorage.getItem('chumchi_site') !== 'true') window.location.href = '../index.html';
+    const sess = JSON.parse(sessionStorage.getItem('chumchi_session') || 'null');
+    if (!sess || (sess.role !== 'admin' && sess.role !== 'superadmin')) {
+      window.location.href = '../platform/login.html';
+    }
+    if (typeof buildSidebar === 'function') buildSidebar('family-admin', sess.role);
+
+    const family = sess.family || 'rafiq';
+    let allMembers = [];
+    let pendingRecipes = [];
+    let pendingRequests = [];
+    let allRecipes = [];
+
+    function doLogout(){ sessionStorage.clear(); window.location.href='../index.html'; }
+    function toast(msg){ const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3200); }
+    function formatDate(d){ return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+
+    // Tabs
+    function switchTab(id) {
+      ['pending','members','recipes'].forEach(t => {
+        document.getElementById('tbtn-'+t).classList.toggle('active', t===id);
+        document.getElementById('panel-'+t).classList.toggle('active', t===id);
+      });
+    }
+
+    // Add member form
+    function toggleAddForm(){
+      document.getElementById('addMemberForm').classList.toggle('open');
+    }
+
+    async function addMember() {
+      const name     = document.getElementById('nm-name').value.trim();
+      const role     = document.getElementById('nm-role').value.trim();
+      const username = document.getElementById('nm-username').value.trim().toLowerCase();
+      const pwd      = document.getElementById('nm-pwd').value.trim();
+      const gen      = parseInt(document.getElementById('nm-gen').value);
+      const msg      = document.getElementById('addMemberMsg');
+
+      if (!name || !role || !username || !pwd) { msg.textContent = 'Please fill all fields.'; return; }
+      msg.textContent = 'Adding…';
+
+      const result = await dbAddMember({ familyId: family, name, role, generation: gen, username, password: pwd });
+      if (result) {
+        toast(`${name} added to the family.`);
+        toggleAddForm();
+        ['nm-name','nm-role','nm-username','nm-pwd'].forEach(id => document.getElementById(id).value='');
+        msg.textContent = '';
+        loadMembers();
+      } else {
+        msg.textContent = 'Failed — username may already exist.';
+      }
+    }
+
+    // Load members
+    async function loadMembers() {
+      allMembers = await dbGetMembers(family);
+      const tbody = document.getElementById('membersTbody');
+      if (!allMembers.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No members yet.</td></tr>'; return; }
+      tbody.innerHTML = allMembers.map(m => {
+        const rc = allRecipes.filter(r => r.assigned_to === m.id).length;
+        return `<tr>
+          <td><strong>${m.name}</strong></td>
+          <td><span class="role-pill">${m.role||'—'}</span></td>
+          <td style="font-family:monospace;font-size:0.75rem;">${m.username||'—'}</td>
+          <td style="font-size:0.72rem;opacity:0.6;">Gen ${m.generation}</td>
+          <td>${rc > 0 ? `<span style="font-weight:600;color:var(--bark);">${rc}</span>` : '<span style="opacity:0.3;">—</span>'}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // Pending recipes
+    async function loadPendingRecipes() {
+      pendingRecipes = await dbGetPendingRecipes(family);
+      const el = document.getElementById('pendingRecipes');
+      if (!pendingRecipes.length) { el.innerHTML = '<div class="empty">No pending recipes.</div>'; return; }
+      el.innerHTML = pendingRecipes.map(r => {
+        const uploader = allMembers.find(m => m.id === r.uploaded_by);
+        const assignee = allMembers.find(m => m.id === r.assigned_to);
+        return `<div class="item-card" id="pr-${r.id}">
+          <div class="item-top">
+            <div>
+              <div class="item-title">${r.title}</div>
+              <div class="item-meta">
+                Uploaded by <strong>${uploader?.name||r.uploaded_by}</strong>
+                → assigned to <strong>${assignee?.name||r.assigned_to}</strong>
+                · ${formatDate(r.created_at)}
+              </div>
+            </div>
+            <span class="status-pill pending">Pending</span>
+          </div>
+          <div class="act-row">
+            <button class="act-btn act-approve" onclick="approveRecipe('${r.id}','${r.title}')">✓ Approve</button>
+            <button class="act-btn act-reject"  onclick="rejectRecipe('${r.id}','${r.title}')">✕ Reject</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    async function approveRecipe(id, title) {
+      const ok = await dbApproveRecipe(id);
+      if (ok) {
+        toast(`"${title}" approved.`);
+        document.getElementById('pr-'+id)?.remove();
+        pendingRecipes = pendingRecipes.filter(r => r.id !== id);
+        updatePendingCount();
+        loadAllRecipes();
+      } else { toast('Failed — check connection.'); }
+    }
+
+    async function rejectRecipe(id, title) {
+      if (!confirm(`Reject and delete "${title}"?`)) return;
+      const ok = await dbRejectRecipe(id);
+      if (ok) {
+        toast(`"${title}" rejected and removed.`);
+        document.getElementById('pr-'+id)?.remove();
+        pendingRecipes = pendingRecipes.filter(r => r.id !== id);
+        updatePendingCount();
+      } else { toast('Failed — check connection.'); }
+    }
+
+    // Pending member requests
+    async function loadPendingRequests() {
+      pendingRequests = await dbGetRequests();
+      const familyReqs = pendingRequests.filter(r =>
+        r.family_id === family && r.status === 'pending' && r.type === 'join'
+      );
+      const el = document.getElementById('pendingMembers');
+      if (!familyReqs.length) { el.innerHTML = '<div class="empty">No pending member requests.</div>'; return; }
+      el.innerHTML = familyReqs.map(r => `
+        <div class="item-card" id="req-${r.id}">
+          <div class="item-top">
+            <div>
+              <div class="item-title">${r.first_name} ${r.last_name}</div>
+              <div class="item-meta">${r.relation||''} · ${r.email||'No email'} · ${formatDate(r.created_at)}</div>
+            </div>
+            <span class="status-pill pending">Pending</span>
+          </div>
+          ${r.note ? `<div class="item-detail" style="font-style:italic;opacity:0.6;margin-bottom:0.7rem;">"${r.note}"</div>` : ''}
+          <div class="act-row">
+            <button class="act-btn act-approve" onclick="approveMember('${r.id}','${r.first_name} ${r.last_name}')">✓ Approve & Add</button>
+            <button class="act-btn act-reject"  onclick="rejectRequest('${r.id}','${r.first_name}')">✕ Decline</button>
+          </div>
+        </div>`).join('');
+    }
+
+    async function approveMember(reqId, name) {
+      // Update request status
+      await dbUpdateRequestStatus(reqId, 'approved');
+      toast(`${name} approved. Add their credentials in Members tab.`);
+      document.getElementById('req-'+reqId)?.remove();
+      updatePendingCount();
+      switchTab('members');
+      toggleAddForm();
+      document.getElementById('nm-name').value = name;
+    }
+
+    async function rejectRequest(reqId, name) {
+      await dbUpdateRequestStatus(reqId, 'declined');
+      toast(`${name}'s request declined.`);
+      document.getElementById('req-'+reqId)?.remove();
+      updatePendingCount();
+    }
+
+    // All recipes tab
+    async function loadAllRecipes() {
+      allRecipes = await dbGetAllFamilyRecipes(family);
+      const el = document.getElementById('allRecipesList');
+      if (!allRecipes.length) { el.innerHTML = '<div class="empty">No recipes yet.</div>'; return; }
+      el.innerHTML = allRecipes.map(r => {
+        const uploader = allMembers.find(m => m.id === r.uploaded_by);
+        const assignee = allMembers.find(m => m.id === r.assigned_to);
+        const isPending = r.status === 'pending';
+        return `<div class="item-card ${isPending ? '' : 'approved'}" style="border-left-color:${isPending ? 'var(--saffron)' : 'var(--sage)'};">
+          <div class="item-top">
+            <div>
+              <div class="item-title">${r.title}</div>
+              <div class="item-meta">
+                ${uploader?.name||r.uploaded_by} → ${assignee?.name||r.assigned_to} · ${formatDate(r.created_at)}
+              </div>
+            </div>
+            <span class="status-pill ${isPending ? 'pending' : 'approved'}">${isPending ? 'Pending' : 'Live'}</span>
+          </div>
+          ${isPending ? `<div class="act-row">
+            <button class="act-btn act-approve" onclick="approveRecipe('${r.id}','${r.title}')">✓ Approve</button>
+            <button class="act-btn act-reject"  onclick="rejectRecipe('${r.id}','${r.title}')">✕ Reject</button>
+          </div>` : ''}
+        </div>`;
+      }).join('');
+    }
+
+    function updatePendingCount() {
+      const total = pendingRecipes.length +
+        pendingRequests.filter(r => r.family_id === family && r.status === 'pending' && r.type === 'join').length;
+      const badges = [document.getElementById('pendingTabCount'), document.getElementById('pendingNavCount')];
+      const navWrap = document.getElementById('pendingNav');
+      const dot = document.getElementById('pendingDot');
+      if(dot) dot.style.display = total > 0 ? 'inline-block' : 'none';
+      const navBadge = document.getElementById('pendingNavCount');
+      if(navBadge){ navBadge.textContent=total; navBadge.style.display=total>0?'inline-flex':'none'; }
+      if (navWrap) navWrap.style.display = total > 0 ? 'flex' : 'none';
+    }
+
+    // Init
+    sbReady(async () => {
+      allMembers   = await dbGetMembers(family);
+      allRecipes   = await dbGetAllFamilyRecipes(family);
+      await loadPendingRecipes();
+      await loadPendingRequests();
+      await loadMembers();
+      await loadAllRecipes();
+      updatePendingCount();
+    });
+  </script>
+</body>
+</html>
