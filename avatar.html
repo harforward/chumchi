@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chumchi — Build Your Avatar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --cream:#FDF6EC; --blush:#F2C4B0; --sage:#C8D8C0; --saffron:#F0C070;
+      --lilac:#D4C0D8; --clay:#C4785A; --bark:#6B4F3A; --ink:#2C2118;
+      --teal:#00B8B8; --teal-light:#E1F5EE;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;color:var(--ink);min-height:100vh;
+      background: linear-gradient(135deg, #1a0c0a 0%, #2c1408 40%, #1a0c18 100%);
+    }
+
+    /* Computer screen chrome */
+    .screen-chrome {
+      background: rgba(40,20,10,0.85);
+      border-bottom: 1px solid rgba(255,200,150,0.12);
+      padding: 0.6rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    .chrome-dots { display:flex; gap:6px; align-items:center; }
+    .dot { width:11px; height:11px; border-radius:50%; }
+    .dot-red   { background:#ff5f56; }
+    .dot-amber { background:#ffbd2e; }
+    .dot-green { background:#27c93f; }
+    .chrome-title {
+      font-family:'Cormorant Garamond',serif;
+      font-size:0.78rem; font-weight:300; letter-spacing:0.22em;
+      text-transform:uppercase; color:rgba(255,230,200,0.55);
+    }
+    .chrome-actions { margin-left:auto; display:flex; gap:0.5rem; }
+    .chrome-btn {
+      font-family:'Inter',sans-serif; font-size:0.58rem;
+      letter-spacing:0.12em; text-transform:uppercase;
+      color:rgba(255,220,180,0.45); background:rgba(255,200,150,0.06);
+      border:1px solid rgba(255,200,150,0.12); padding:0.28rem 0.7rem;
+      cursor:pointer; text-decoration:none; transition:all 0.2s; border-radius:4px;
+    }
+    .chrome-btn:hover { color:rgba(255,220,180,0.9); background:rgba(255,200,150,0.12); }
+
+    /* Nav */
+    .top-nav{height:52px;display:flex;align-items:center;padding:0 1.5rem;gap:1rem;
+      background:rgba(253,246,236,0.95);backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(107,79,58,0.08);position:sticky;top:0;z-index:100;}
+    .nav-brand{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;
+      letter-spacing:0.26em;text-transform:uppercase;color:var(--bark);text-decoration:none;}
+    .nav-right{margin-left:auto;display:flex;gap:1rem;align-items:center;}
+    .nav-link{font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--bark);
+      opacity:0.42;cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif;}
+    .nav-link:hover{opacity:0.9;}
+
+    /* Page layout */
+    .page{max-width:1000px;margin:0 auto;padding:1.5rem 1rem 5rem;}
+
+    .page-head{margin-bottom:1.5rem;}
+    .page-head h1{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;
+      letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,230,200,0.88);}
+    .page-head p{font-family:'Cormorant Garamond',serif;font-style:italic;
+      font-size:0.82rem;color:rgba(240,180,120,0.55);margin-top:0.25rem;}
+
+    /* Builder grid */
+    .builder{display:grid;grid-template-columns:240px 1fr;gap:1.5rem;align-items:start;}
+    @media(max-width:680px){.builder{grid-template-columns:1fr;}}
+
+    /* Preview pane */
+    .preview-pane{position:sticky;top:68px;}
+    .preview-card{background:rgba(255,240,220,0.07);backdrop-filter:blur(12px);border-radius:16px;padding:1.5rem;
+      border:1px solid rgba(255,200,150,0.15);text-align:center;}
+    .preview-label{font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;
+      color:rgba(255,220,180,0.45);margin-bottom:1rem;display:block;}
+    #avatarPreview{width:180px;height:180px;margin:0 auto 1rem;}
+    #avatarPreviewFull{width:180px;height:260px;margin:0 auto 1rem;}
+
+    /* Toggle face/body */
+    .preview-toggle{display:flex;border:1px solid rgba(255,200,150,0.15);border-radius:20px;overflow:hidden;margin:0 auto 1rem;width:fit-content;}
+    .ptog{font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.3rem 0.8rem;
+      background:none;border:none;cursor:pointer;color:rgba(255,220,180,0.45);font-family:'Inter',sans-serif;transition:all 0.2s;}
+    .ptog.active{background:rgba(196,120,90,0.7);color:rgba(255,240,220,0.95);opacity:1;}
+
+    /* Skin slider */
+    .skin-row{display:flex;align-items:center;gap:0.8rem;margin-top:0.8rem;}
+    .skin-label{font-size:0.58rem;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,220,180,0.45);white-space:nowrap;}
+    #skinSlider{flex:1;accent-color:var(--clay);}
+    .skin-swatch{width:22px;height:22px;border-radius:50%;border:1px solid rgba(107,79,58,0.18);flex-shrink:0;}
+
+    /* Saved looks */
+    .saved-looks{display:flex;gap:0.5rem;margin-top:1rem;}
+    .look-slot{width:48px;height:48px;border-radius:50%;border:1.5px dashed rgba(255,200,150,0.2);
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      font-size:0.6rem;color:rgba(255,220,180,0.4);opacity:1;transition:all 0.2s;overflow:hidden;background:rgba(255,240,220,0.05);}
+    .look-slot.filled{border-style:solid;border-color:rgba(196,120,90,0.6);}
+    .look-slot:hover{border-color:rgba(196,120,90,0.5);}
+    .look-slot-label{font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,220,180,0.35);margin-top:0.3rem;text-align:center;}
+
+    /* Randomise + save buttons */
+    .action-row{display:flex;gap:0.5rem;margin-top:1rem;}
+    .btn{padding:0.65rem 1rem;font-family:'Inter',sans-serif;font-size:0.62rem;font-weight:500;
+      letter-spacing:0.14em;text-transform:uppercase;border:none;cursor:pointer;transition:all 0.2s;border-radius:0;}
+    .btn-primary{background:rgba(107,79,58,0.75);color:rgba(255,240,220,0.95);flex:1;border:1px solid rgba(196,120,90,0.3);}
+    .btn-primary:hover{background:rgba(196,120,90,0.7);}
+    .btn-ghost{background:transparent;color:rgba(255,220,180,0.55);border:1.5px solid rgba(255,200,150,0.15);flex:1;}
+    .btn-ghost:hover{background:rgba(255,200,150,0.08);color:rgba(255,220,180,0.9);}
+    .save-msg{font-size:0.7rem;font-style:italic;color:rgba(240,180,100,0.7);margin-top:0.4rem;min-height:1rem;text-align:center;}
+
+    /* Traits pane */
+    .traits-pane{background:rgba(255,240,220,0.06);backdrop-filter:blur(12px);border-radius:16px;padding:1.4rem;
+      border:1px solid rgba(255,200,150,0.12);}
+
+    /* Category jump tags */
+    .cat-tags{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1.2rem;}
+    .cat-tag{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;
+      padding:0.28rem 0.75rem;border-radius:20px;cursor:pointer;transition:all 0.2s;
+      background:rgba(255,200,150,0.08);color:rgba(255,220,180,0.55);border:1px solid rgba(255,200,150,0.12);
+      font-family:'Inter',sans-serif;font-weight:500;}
+    .cat-tag:hover{background:rgba(255,200,150,0.15);color:rgba(255,220,180,0.9);}
+    .cat-tag.active{background:rgba(196,120,90,0.7);color:rgba(255,240,220,0.95);border-color:rgba(196,120,90,0.6);}
+
+    /* Section */
+    .trait-section{margin-bottom:1.4rem;}
+    .trait-section-head{display:flex;align-items:center;justify-content:space-between;
+      cursor:pointer;padding:0.5rem 0;border-bottom:1px solid rgba(255,200,150,0.08);margin-bottom:0.9rem;}
+    .trait-section-head h3{font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,220,180,0.4);}
+    .trait-section-head .toggle-icon{font-size:0.7rem;color:rgba(255,220,180,0.3);transition:transform 0.2s;}
+    .trait-section-head.collapsed .toggle-icon{transform:rotate(-90deg);}
+    .trait-grid{display:grid;gap:6px;transition:all 0.2s;}
+    .trait-grid.hidden{display:none;}
+
+    /* Trait tiles */
+    .trait-tile{border:1px solid rgba(255,200,150,0.12);border-radius:8px;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      padding:4px;aspect-ratio:1;transition:all 0.18s;background:rgba(255,240,220,0.05);}
+    .trait-tile:hover{border-color:rgba(196,120,90,0.5);background:rgba(196,120,90,0.10);}
+    .trait-tile.selected{border:2px solid rgba(196,120,90,0.75);background:rgba(196,120,90,0.15);}
+    .trait-tile svg{width:100%;height:100%;}
+
+    /* None tile */
+    .trait-tile.none-tile{font-size:0.6rem;letter-spacing:0.08em;color:var(--bark);opacity:0.4;}
+
+    /* Sticker tiles are wider label */
+    .sticker-label{font-size:0.55rem;text-align:center;color:rgba(255,220,180,0.4);
+      margin-top:3px;letter-spacing:0.05em;line-height:1.2;}
+  </style>
+</head>
+<body>
+
+<!-- Computer screen chrome frame -->
+<div class="screen-chrome">
+  <div class="chrome-dots">
+    <span class="dot dot-red"></span>
+    <span class="dot dot-amber"></span>
+    <span class="dot dot-green"></span>
+  </div>
+  <div class="chrome-title">✦ Chumchi Avatar Studio</div>
+  <div class="chrome-actions">
+    <a href="tree.html" class="chrome-btn">← Back to Tree</a>
+    <button class="chrome-btn" onclick="skipAvatar()">Skip</button>
+    <button class="chrome-btn" onclick="doLogout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="page">
+  <div class="page-head">
+    <h1>Build Your Avatar</h1>
+    <p>Your face on the family tree. Choose your look, save up to 3 favourites.</p>
+  </div>
+
+  <div class="builder">
+
+    <!-- ── Left: Preview ── -->
+    <div class="preview-pane">
+      <div class="preview-card">
+        <span class="preview-label">Your Avatar</span>
+
+        <div class="preview-toggle">
+          <button class="ptog active" onclick="setView('face',this)">Face</button>
+          <button class="ptog" onclick="setView('body',this)">Full Body</button>
+        </div>
+
+        <div id="faceView">
+          <svg id="avatarPreview" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div id="bodyView" style="display:none;">
+          <svg id="avatarPreviewFull" viewBox="0 0 180 260" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+
+        <!-- Skin slider -->
+        <div class="skin-row">
+          <span class="skin-label">Skin</span>
+          <input type="range" id="skinSlider" min="0" max="100" value="20" oninput="updateSkin(this.value)"/>
+          <div class="skin-swatch" id="skinSwatch"></div>
+        </div>
+
+        <!-- Saved looks -->
+        <div style="margin-top:1rem;">
+          <div style="font-size:0.55rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--bark);opacity:0.38;margin-bottom:0.5rem;">Saved Looks</div>
+          <div class="saved-looks">
+            <div style="text-align:center;">
+              <div class="look-slot" id="look0" onclick="loadLook(0)" title="Look 1"></div>
+              <div class="look-slot-label">Look 1</div>
+            </div>
+            <div style="text-align:center;">
+              <div class="look-slot" id="look1" onclick="loadLook(1)" title="Look 2"></div>
+              <div class="look-slot-label">Look 2</div>
+            </div>
+            <div style="text-align:center;">
+              <div class="look-slot" id="look2" onclick="loadLook(2)" title="Look 3"></div>
+              <div class="look-slot-label">Look 3</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn btn-ghost" onclick="randomise()">✦ Surprise Me</button>
+          <button class="btn btn-primary" onclick="saveLookPrompt()">Save Look</button>
+        </div>
+        <div class="action-row" style="margin-top:0.4rem;">
+          <button class="btn btn-primary" style="flex:1;" onclick="confirmAvatar()">✓ Use This Avatar</button>
+        </div>
+        <p class="save-msg" id="saveMsg"></p>
+      </div>
+    </div>
+
+    <!-- ── Right: Traits ── -->
+    <div class="traits-pane">
+
+      <!-- Jump tags -->
+      <div class="cat-tags" id="catTags">
+        <button class="cat-tag active" onclick="jumpTo('head',this)">Head</button>
+        <button class="cat-tag" onclick="jumpTo('eyes',this)">Eyes</button>
+        <button class="cat-tag" onclick="jumpTo('brows',this)">Brows</button>
+        <button class="cat-tag" onclick="jumpTo('mouth',this)">Mouth</button>
+        <button class="cat-tag" onclick="jumpTo('nose',this)">Nose</button>
+        <button class="cat-tag" onclick="jumpTo('ears',this)">Ears</button>
+        <button class="cat-tag" onclick="jumpTo('hair',this)">Hair</button>
+        <button class="cat-tag" onclick="jumpTo('hats',this)">Hats</button>
+        <button class="cat-tag" onclick="jumpTo('outfit',this)">Outfit</button>
+        <button class="cat-tag" onclick="jumpTo('stickers',this)">Stickers</button>
+      </div>
+
+      <!-- Each section built by JS -->
+      <div id="traitsContainer"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Save look modal -->
+<div id="lookModal" style="display:none;position:fixed;inset:0;background:rgba(44,33,24,0.3);z-index:500;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:2rem;width:90%;max-width:300px;text-align:center;">
+    <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;color:var(--bark);margin-bottom:1rem;">Save to which slot?</p>
+    <div style="display:flex;gap:0.6rem;justify-content:center;">
+      <button class="btn btn-ghost" onclick="saveLook(0);closeLookModal()">Look 1</button>
+      <button class="btn btn-ghost" onclick="saveLook(1);closeLookModal()">Look 2</button>
+      <button class="btn btn-ghost" onclick="saveLook(2);closeLookModal()">Look 3</button>
+    </div>
+    <button class="btn" style="margin-top:0.8rem;width:100%;opacity:0.4;" onclick="closeLookModal()">Cancel</button>
+  </div>
+</div>
+
+<script src="../assets/supabase.js"></script>
+<script src="../assets/app.js"></script>
+<script>
+if (sessionStorage.getItem('chumchi_site') !== 'true') window.location.href = '../index.html';
+const sess = JSON.parse(sessionStorage.getItem('chumchi_session') || 'null');
+if (!sess) window.location.href = '../platform/login.html';
+function doLogout(){ sessionStorage.clear(); window.location.href='../index.html'; }
+function skipAvatar(){ sessionStorage.setItem('chumchi_avatar_skipped','true'); window.location.href='tree.html'; }
+
+// ── Skin tones (WCAG-safe hues) ──
+const SKIN_TONES = [
+  '#FDEBD8','#F5CBA7','#E8B48A','#D4956A','#C07850','#A0623A','#7A4020','#4A2010','#2C1008',
+];
+function skinFromSlider(v){ return SKIN_TONES[Math.round(v/100*(SKIN_TONES.length-1))]; }
+function updateSkin(v){
+  state.skin = skinFromSlider(v);
+  document.getElementById('skinSwatch').style.background = state.skin;
+  renderPreview();
+}
+
+// ── Avatar state ──
+let state = {
+  skin:'#F5CBA7', head:0, eyes:0, brows:0, mouth:0, nose:0, ears:0,
+  hair:0, hat:-1, outfit:0, sticker:-1,
+};
+let savedLooks = [null,null,null];
+
+// ── Trait definitions ──
+const TRAITS = {
+
+  head:{
+    label:'Head Shape', cols:5,
+    items:[
+      { id:0, draw:(s,skin)=>`<circle cx="${s/2}" cy="${s/2}" r="${s*.42}" fill="${skin}"/><circle cx="${s/2}" cy="${s*.55}" r="${s*.38}" fill="${skin}"/>` },
+      { id:1, draw:(s,skin)=>`<rect x="${s*.1}" y="${s*.15}" width="${s*.8}" height="${s*.72}" rx="${s*.12}" fill="${skin}"/>` },
+      { id:2, draw:(s,skin)=>`<ellipse cx="${s/2}" cy="${s*.48}" rx="${s*.38}" ry="${s*.44}" fill="${skin}"/>` },
+      { id:3, draw:(s,skin)=>`<rect x="${s*.08}" y="${s*.1}" width="${s*.84}" height="${s*.8}" rx="${s*.06}" fill="${skin}"/>` },
+      { id:4, draw:(s,skin)=>`<polygon points="${s*.5},${s*.05} ${s*.92},${s*.28} ${s*.92},${s*.75} ${s*.5},${s*.95} ${s*.08},${s*.75} ${s*.08},${s*.28}" fill="${skin}"/>` },
+    ]
+  },
+
+  eyes:{
+    label:'Eyes', cols:5,
+    items:[
+      { id:0, draw:(s)=>`<circle cx="${s*.32}" cy="${s*.5}" r="${s*.1}" fill="#2C1008"/><circle cx="${s*.68}" cy="${s*.5}" r="${s*.1}" fill="#2C1008"/><circle cx="${s*.29}" cy="${s*.47}" r="${s*.03}" fill="white"/>` },
+      { id:1, draw:(s)=>`<rect x="${s*.22}" y="${s*.44}" width="${s*.18}" height="${s*.13}" rx="${s*.04}" fill="#2C1008"/><rect x="${s*.6}" y="${s*.44}" width="${s*.18}" height="${s*.13}" rx="${s*.04}" fill="#2C1008"/>` },
+      { id:2, draw:(s)=>`<ellipse cx="${s*.32}" cy="${s*.5}" rx="${s*.1}" ry="${s*.07}" fill="#2C1008"/><ellipse cx="${s*.68}" cy="${s*.5}" rx="${s*.1}" ry="${s*.07}" fill="#2C1008"/>` },
+      { id:3, draw:(s)=>`<line x1="${s*.22}" y1="${s*.47}" x2="${s*.4}" y2="${s*.53}" stroke="#2C1008" stroke-width="${s*.04}" stroke-linecap="round"/><line x1="${s*.6}" y1="${s*.47}" x2="${s*.78}" y2="${s*.53}" stroke="#2C1008" stroke-width="${s*.04}" stroke-linecap="round"/>` },
+      { id:4, draw:(s)=>`<ellipse cx="${s*.32}" cy="${s*.5}" rx="${s*.08}" ry="${s*.12}" fill="#2C1008"/><ellipse cx="${s*.68}" cy="${s*.5}" rx="${s*.08}" ry="${s*.12}" fill="#2C1008"/><circle cx="${s*.29}" cy="${s*.46}" r="${s*.04}" fill="white"/><circle cx="${s*.65}" cy="${s*.46}" r="${s*.04}" fill="white"/>` },
+      { id:5, draw:(s)=>`<path d="M${s*.22} ${s*.5} Q${s*.32} ${s*.42} ${s*.42} ${s*.5}" stroke="#2C1008" stroke-width="${s*.04}" fill="none" stroke-linecap="round"/><path d="M${s*.58} ${s*.5} Q${s*.68} ${s*.42} ${s*.78} ${s*.5}" stroke="#2C1008" stroke-width="${s*.04}" fill="none" stroke-linecap="round"/>` },
+      { id:6, draw:(s)=>`<text x="${s*.27}" y="${s*.56}" font-size="${s*.18}" fill="#2C1008">×</text><text x="${s*.63}" y="${s*.56}" font-size="${s*.18}" fill="#2C1008">×</text>` },
+      { id:7, draw:(s)=>`<circle cx="${s*.32}" cy="${s*.5}" r="${s*.1}" fill="#1A3A6A"/><circle cx="${s*.68}" cy="${s*.5}" r="${s*.1}" fill="#1A3A6A"/><circle cx="${s*.29}" cy="${s*.47}" r="${s*.03}" fill="white"/>` },
+      { id:8, draw:(s)=>`<polygon points="${s*.22},${s*.44} ${s*.42},${s*.44} ${s*.32},${s*.58}" fill="#2C1008"/><polygon points="${s*.58},${s*.44} ${s*.78},${s*.44} ${s*.68},${s*.58}" fill="#2C1008"/>` },
+      { id:9, draw:(s)=>`<circle cx="${s*.32}" cy="${s*.5}" r="${s*.1}" fill="#2C1008"/><circle cx="${s*.68}" cy="${s*.5}" r="${s*.1}" fill="#2C1008"/><line x1="${s*.24}" y1="${s*.42}" x2="${s*.4}" y2="${s*.48}" stroke="#2C1008" stroke-width="${s*.025}"/><line x1="${s*.6}" y1="${s*.48}" x2="${s*.76}" y2="${s*.42}" stroke="#2C1008" stroke-width="${s*.025}"/>` },
+    ]
+  },
+
+  brows:{
+    label:'Eyebrows', cols:5,
+    items:[
+      { id:0, draw:(s)=>`<path d="M${s*.22} ${s*.36} Q${s*.32} ${s*.3} ${s*.42} ${s*.34}" stroke="#5C3A1A" stroke-width="${s*.03}" fill="none" stroke-linecap="round"/><path d="M${s*.58} ${s*.34} Q${s*.68} ${s*.3} ${s*.78} ${s*.36}" stroke="#5C3A1A" stroke-width="${s*.03}" fill="none" stroke-linecap="round"/>` },
+      { id:1, draw:(s)=>`<rect x="${s*.22}" y="${s*.32}" width="${s*.2}" height="${s*.05}" rx="${s*.025}" fill="#5C3A1A"/><rect x="${s*.58}" y="${s*.32}" width="${s*.2}" height="${s*.05}" rx="${s*.025}" fill="#5C3A1A"/>` },
+      { id:2, draw:(s)=>`<path d="M${s*.22} ${s*.34} Q${s*.32} ${s*.27} ${s*.42} ${s*.32}" stroke="#5C3A1A" stroke-width="${s*.04}" fill="none" stroke-linecap="round"/><path d="M${s*.58} ${s*.32} Q${s*.68} ${s*.27} ${s*.78} ${s*.34}" stroke="#5C3A1A" stroke-width="${s*.04}" fill="none" stroke-linecap="round"/>` },
+      { id:3, draw:(s)=>`<path d="M${s*.22} ${s*.32} Q${s*.32} ${s*.38} ${s*.42} ${s*.34}" stroke="#5C3A1A" stroke-width="${s*.03}" fill="none" stroke-linecap="round"/><path d="M${s*.58} ${s*.34} Q${s*.68} ${s*.38} ${s*.78} ${s*.32}" stroke="#5C3A1A" stroke-width="${s*.03}" fill="none" stroke-linecap="round"/>` },
+      { id:4, draw:(s)=>`<line x1="${s*.22}" y1="${s*.33}" x2="${s*.42}" y2="${s*.33}" stroke="#5C3A1A" stroke-width="${s*.05}" stroke-linecap="round"/><line x1="${s*.58}" y1="${s*.33}" x2="${s*.78}" y2="${s*.33}" stroke="#5C3A1A" stroke-width="${s*.05}" stroke-linecap="round"/>` },
+    ]
+  },
+
+  mouth:{
+    label:'Mouth', cols:5,
+    items:[
+      { id:0, draw:(s)=>`<path d="M${s*.3} ${s*.7} Q${s*.5} ${s*.82} ${s*.7} ${s*.7}" stroke="#5C1A1A" stroke-width="${s*.035}" fill="none" stroke-linecap="round"/>` },
+      { id:1, draw:(s)=>`<line x1="${s*.3}" y1="${s*.73}" x2="${s*.7}" y2="${s*.73}" stroke="#5C1A1A" stroke-width="${s*.04}" stroke-linecap="round"/>` },
+      { id:2, draw:(s)=>`<path d="M${s*.3} ${s*.77} Q${s*.5} ${s*.66} ${s*.7} ${s*.77}" stroke="#5C1A1A" stroke-width="${s*.035}" fill="none" stroke-linecap="round"/>` },
+      { id:3, draw:(s)=>`<path d="M${s*.3} ${s*.7} Q${s*.5} ${s*.82} ${s*.7} ${s*.7}" fill="#5C1A1A" stroke="none"/><path d="M${s*.34} ${s*.7} Q${s*.5} ${s*.78} ${s*.66} ${s*.7}" fill="#E8A090"/>` },
+      { id:4, draw:(s)=>`<path d="M${s*.28} ${s*.72} Q${s*.38} ${s*.8} ${s*.5} ${s*.78} Q${s*.62} ${s*.8} ${s*.72} ${s*.72}" stroke="#5C1A1A" stroke-width="${s*.03}" fill="none" stroke-linecap="round"/><circle cx="${s*.38}" cy="${s*.75}" r="${s*.02}" fill="#E8A090"/><circle cx="${s*.62}" cy="${s*.75}" r="${s*.02}" fill="#E8A090"/>` },
+      { id:5, draw:(s)=>`<rect x="${s*.3}" y="${s*.68}" width="${s*.4}" height="${s*.1}" rx="${s*.05}" fill="#5C1A1A"/>` },
+      { id:6, draw:(s)=>`<path d="M${s*.3} ${s*.7} Q${s*.5} ${s*.82} ${s*.7} ${s*.7}" stroke="#5C1A1A" stroke-width="${s*.035}" fill="none"/><line x1="${s*.42}" y1="${s*.7}" x2="${s*.42}" y2="${s*.77}" stroke="#5C1A1A" stroke-width="${s*.02}"/><line x1="${s*.5}" y1="${s*.7}" x2="${s*.5}" y2="${s*.79}" stroke="#5C1A1A" stroke-width="${s*.02}"/><line x1="${s*.58}" y1="${s*.7}" x2="${s*.58}" y2="${s*.77}" stroke="#5C1A1A" stroke-width="${s*.02}"/>` },
+      { id:7, draw:(s)=>`<path d="M${s*.35} ${s*.7} Q${s*.5} ${s*.65} ${s*.65} ${s*.7} Q${s*.5} ${s*.82} ${s*.35} ${s*.7}" fill="#5C1A1A"/>` },
+      { id:8, draw:(s)=>`<text x="${s*.36}" y="${s*.78}" font-size="${s*.14}" fill="#5C1A1A">:P</text>` },
+      { id:9, draw:(s)=>`<circle cx="${s*.5}" cy="${s*.73}" r="${s*.08}" fill="none" stroke="#5C1A1A" stroke-width="${s*.03}"/>` },
+    ]
+  },
+
+  nose:{
+    label:'Nose', cols:5,
+    items:[
+      { id:0, draw:(s)=>`<path d="M${s*.5} ${s*.52} L${s*.44} ${s*.64} Q${s*.5} ${s*.66} ${s*.56} ${s*.64} L${s*.5} ${s*.52}" stroke="#7A5A3A" stroke-width="${s*.025}" fill="none" stroke-linecap="round"/>` },
+      { id:1, draw:(s)=>`<circle cx="${s*.5}" cy="${s*.6}" r="${s*.04}" fill="#7A5A3A" opacity="0.5"/>` },
+      { id:2, draw:(s)=>`<path d="M${s*.44} ${s*.63} Q${s*.5} ${s*.58} ${s*.56} ${s*.63}" stroke="#7A5A3A" stroke-width="${s*.03}" fill="none" stroke-linecap="round"/>` },
+      { id:3, draw:(s)=>`<ellipse cx="${s*.5}" cy="${s*.61}" rx="${s*.06}" ry="${s*.04}" fill="none" stroke="#7A5A3A" stroke-width="${s*.025}"/>` },
+      { id:4, draw:(s)=>`<path d="M${s*.48} ${s*.54} L${s*.48} ${s*.65}" stroke="#7A5A3A" stroke-width="${s*.03}" stroke-linecap="round"/><path d="M${s*.52} ${s*.54} L${s*.52} ${s*.65}" stroke="#7A5A3A" stroke-width="${s*.03}" stroke-linecap="round"/>` },
+    ]
+  },
+
+  ears:{
+    label:'Ears', cols:5,
+    items:[
+      { id:0, draw:(s,skin)=>`<ellipse cx="${s*.08}" cy="${s*.5}" rx="${s*.06}" ry="${s*.1}" fill="${skin}" stroke="#7A5A3A" stroke-width="0.8"/><ellipse cx="${s*.92}" cy="${s*.5}" rx="${s*.06}" ry="${s*.1}" fill="${skin}" stroke="#7A5A3A" stroke-width="0.8"/>` },
+      { id:1, draw:(s,skin)=>`<circle cx="${s*.07}" cy="${s*.5}" r="${s*.07}" fill="${skin}" stroke="#7A5A3A" stroke-width="0.8"/><circle cx="${s*.93}" cy="${s*.5}" r="${s*.07}" fill="${skin}" stroke="#7A5A3A" stroke-width="0.8"/>` },
+      { id:2, draw:(s,skin)=>`<polygon points="${s*.02},${s*.46} ${s*.12},${s*.38} ${s*.12},${s*.62}" fill="${skin}" stroke="#7A5A3A" stroke-width="0.8"/><polygon points="${s*.98},${s*.46} ${s*.88},${s*.38} ${s*.88},${s*.62}" fill="${skin}" stroke="#7A5A3A" stroke-width="0.8"/>` },
+      { id:3, draw:(s,skin)=>`<ellipse cx="${s*.08}" cy="${s*.5}" rx="${s*.07}" ry="${s*.08}" fill="${skin}" stroke="#7A5A3A" stroke-width="0.8"/><circle cx="${s*.08}" cy="${s*.5}" r="${s*.03}" fill="#7A5A3A" opacity="0.4"/><ellipse cx="${s*.92}" cy="${s*.5}" rx="${s*.07}" ry="${s*.08}" fill="${skin}" stroke="#7A5A3A" stroke-width="0.8"/><circle cx="${s*.92}" cy="${s*.5}" r="${s*.03}" fill="#7A5A3A" opacity="0.4"/>` },
+      { id:4, draw:(s,skin)=>`<path d="M${s*.02} ${s*.44} Q${s*.0} ${s*.5} ${s*.02} ${s*.56} L${s*.1} ${s*.56} Q${s*.14} ${s*.5} ${s*.1} ${s*.44} Z" fill="${skin}" stroke="#7A5A3A" stroke-width="0.8"/><path d="M${s*.98} ${s*.44} Q${s*1.0} ${s*.5} ${s*.98} ${s*.56} L${s*.9} ${s*.56} Q${s*.86} ${s*.5} ${s*.9} ${s*.44} Z" fill="${skin}" stroke="#7A5A3A" stroke-width="0.8"/>` },
+    ]
+  },
+
+  hair:{
+    label:'Hair', cols:7,
+    items:[
+      { id:-1, draw:()=>``, label:'Bald' },
+      { id:0,  draw:(s)=>`<path d="M${s*.08} ${s*.42} Q${s*.1} ${s*.05} ${s*.5} ${s*.05} Q${s*.9} ${s*.05} ${s*.92} ${s*.42}" fill="#4A2C10" stroke="none"/>` },
+      { id:1,  draw:(s)=>`<path d="M${s*.06} ${s*.45} Q${s*.08} ${s*.02} ${s*.5} ${s*.02} Q${s*.92} ${s*.02} ${s*.94} ${s*.45} L${s*.85} ${s*.55} Q${s*.8} ${s*.08} ${s*.5} ${s*.08} Q${s*.2} ${s*.08} ${s*.15} ${s*.55} Z" fill="#4A2C10"/>` },
+      { id:2,  draw:(s)=>`<path d="M${s*.08} ${s*.42} Q${s*.1} ${s*.05} ${s*.5} ${s*.05} Q${s*.9} ${s*.05} ${s*.92} ${s*.42}" fill="#2C1808"/><path d="M${s*.92} ${s*.42} Q${s*.95} ${s*.6} ${s*.88} ${s*.9}" stroke="#2C1808" stroke-width="${s*.06}" fill="none" stroke-linecap="round"/>` },
+      { id:3,  draw:(s)=>`<ellipse cx="${s*.5}" cy="${s*.15}" rx="${s*.42}" ry="${s*.18}" fill="#C4785A"/>` },
+      { id:4,  draw:(s)=>`<path d="M${s*.08} ${s*.4} Q${s*.1} ${s*.04} ${s*.5} ${s*.04} Q${s*.9} ${s*.04} ${s*.92} ${s*.4}" fill="#8B4513"/><path d="M${s*.5} ${s*.04} L${s*.46} ${s*.0} L${s*.5} ${s*.08} L${s*.54} ${s*.0} Z" fill="#8B4513"/>` },
+      { id:5,  draw:(s)=>`<path d="M${s*.1} ${s*.45} Q${s*.12} ${s*.06} ${s*.5} ${s*.06} Q${s*.88} ${s*.06} ${s*.9} ${s*.45}" fill="#1A1A1A"/>` },
+      { id:6,  draw:(s)=>`<path d="M${s*.08} ${s*.4} Q${s*.1} ${s*.04} ${s*.5} ${s*.04} Q${s*.9} ${s*.04} ${s*.92} ${s*.4}" fill="#8B0000"/>` },
+      { id:7,  draw:(s)=>`<path d="M${s*.08} ${s*.42} Q${s*.1} ${s*.05} ${s*.5} ${s*.05} Q${s*.9} ${s*.05} ${s*.92} ${s*.42}" fill="#E8C87A"/>` },
+      { id:8,  draw:(s)=>`<path d="M${s*.08} ${s*.42} Q${s*.12} ${s*.05} ${s*.5} ${s*.05} Q${s*.88} ${s*.05} ${s*.92} ${s*.42}" fill="#9B59B6"/>` },
+      { id:9,  draw:(s)=>`<path d="M${s*.08} ${s*.42} Q${s*.1} ${s*.04} ${s*.5} ${s*.04} Q${s*.9} ${s*.04} ${s*.92} ${s*.42} L${s*.85} ${s*.9}" stroke="#2C1808" stroke-width="${s*.05}" fill="#2C1808" stroke-linecap="round"/><path d="M${s*.08} ${s*.42} L${s*.15} ${s*.9}" stroke="#2C1808" stroke-width="${s*.05}" stroke-linecap="round"/>` },
+      { id:10, draw:(s)=>`<path d="M${s*.08} ${s*.42} Q${s*.1} ${s*.04} ${s*.5} ${s*.04} Q${s*.9} ${s*.04} ${s*.92} ${s*.42}" fill="#A0A0A0"/>` },
+      { id:11, draw:(s)=>`<path d="M${s*.08} ${s*.42} Q${s*.1} ${s*.04} ${s*.5} ${s*.04} Q${s*.9} ${s*.04} ${s*.92} ${s*.42}" fill="#F5F0E8"/>` },
+      { id:12, draw:(s)=>`<circle cx="${s*.5}" cy="${s*.12}" r="${s*.3}" fill="none" stroke="#4A2C10" stroke-width="${s*.06}"/>` },
+    ]
+  },
+
+  hats:{
+    label:'Hats & Head Gear', cols:5,
+    items:[
+      { id:-1, draw:()=>``, label:'None' },
+      { id:0,  draw:(s)=>`<rect x="${s*.3}" y="${s*.22}" width="${s*.4}" height="${s*.2}" rx="${s*.04}" fill="white" stroke="#CCC" stroke-width="0.8"/><rect x="${s*.25}" y="${s*.38}" width="${s*.5}" height="${s*.06}" rx="${s*.02}" fill="white" stroke="#DDD" stroke-width="0.8"/><path d="M${s*.35} ${s*.22} Q${s*.5} ${s*.04} ${s*.65} ${s*.22}" fill="white" stroke="#CCC" stroke-width="0.8"/>`, label:'Chef Toque' },
+      { id:1,  draw:(s)=>`<rect x="${s*.2}" y="${s*.28}" width="${s*.6}" height="${s*.1}" rx="${s*.04}" fill="#1A1A2E"/><rect x="${s*.28}" y="${s*.18}" width="${s*.44}" height="${s*.12}" rx="${s*.06}" fill="#1A1A2E"/><circle cx="${s*.5}" cy="${s*.15}" r="${s*.04}" fill="#F0C070"/>`, label:'Sushi Bandana' },
+      { id:2,  draw:(s)=>`<ellipse cx="${s*.5}" cy="${s*.3}" rx="${s*.3}" ry="${s*.08}" fill="#8B4513"/><rect x="${s*.38}" y="${s*.22}" width="${s*.24}" height="${s*.1}" rx="${s*.04}" fill="#A0522D"/>`, label:'Baker Cap' },
+      { id:3,  draw:(s)=>`<path d="M${s*.25} ${s*.34} Q${s*.3} ${s*.14} ${s*.5} ${s*.14} Q${s*.7} ${s*.14} ${s*.75} ${s*.34}" fill="#FF6B6B"/><rect x="${s*.2}" y="${s*.33}" width="${s*.6}" height="${s*.06}" rx="${s*.02}" fill="#FF8E8E"/>`, label:'Street Visor' },
+      { id:4,  draw:(s)=>`<ellipse cx="${s*.5}" cy="${s*.35}" rx="${s*.28}" ry="${s*.14}" fill="#C8D8C0" stroke="#8AAA80" stroke-width="0.8"/><line x1="${s*.5}" y1="${s*.21}" x2="${s*.5}" y2="${s*.14}" stroke="#8AAA80" stroke-width="${s*.03}"/><circle cx="${s*.5}" cy="${s*.13}" r="${s*.03}" fill="#C4785A"/>`, label:'Grandma Scarf' },
+      { id:5,  draw:(s)=>`<ellipse cx="${s*.5}" cy="${s*.34}" rx="${s*.38}" ry="${s*.06}" fill="#4A2C10"/><path d="M${s*.3} ${s*.34} L${s*.5} ${s*.08} L${s*.7} ${s*.34}" fill="#3A1C08"/>`, label:'Cowboy Hat' },
+      { id:6,  draw:(s)=>`<rect x="${s*.35}" y="${s*.14}" width="${s*.3}" height="${s*.2}" rx="${s*.04}" fill="#E8C87A" stroke="#C4A050" stroke-width="0.8"/><path d="M${s*.35} ${s*.14} L${s*.5} ${s*.06} L${s*.65} ${s*.14}" fill="#C4A050"/>`, label:'Party Hat' },
+      { id:7,  draw:(s)=>`<ellipse cx="${s*.5}" cy="${s*.32}" rx="${s*.34}" ry="${s*.08}" fill="#2C1808"/><rect x="${s*.42}" y="${s*.24}" width="${s*.16}" height="${s*.1}" rx="${s*.04}" fill="#2C1808"/>`, label:'Beret' },
+      { id:8,  draw:(s)=>`<ellipse cx="${s*.5}" cy="${s*.34}" rx="${s*.32}" ry="${s*.08}" fill="#E8E8E8" stroke="#CCC" stroke-width="0.8"/><path d="M${s*.28} ${s*.32} Q${s*.3} ${s*.14} ${s*.5} ${s*.12} Q${s*.7} ${s*.14} ${s*.72} ${s*.32}" fill="#F0F0F0" stroke="#DDD" stroke-width="0.8"/>`, label:'Pot on Head' },
+    ]
+  },
+
+  outfit:{
+    label:'Outfit', cols:5,
+    items:[
+      { id:0, draw:(s)=>`<rect x="${s*.25}" y="${s*.72}" width="${s*.5}" height="${s*.25}" rx="${s*.04}" fill="#C8D8C0" stroke="#8AAA80" stroke-width="0.8"/><path d="M${s*.25} ${s*.72} L${s*.2} ${s*.65} L${s*.5} ${s*.7} L${s*.8} ${s*.65} L${s*.75} ${s*.72}" fill="#A0C0A0"/>`, label:'Apron' },
+      { id:1, draw:(s)=>`<rect x="${s*.2}" y="${s*.7}" width="${s*.6}" height="${s*.28}" rx="${s*.04}" fill="white" stroke="#DDD" stroke-width="0.8"/><rect x="${s*.44}" y="${s*.7}" width="${s*.12}" height="${s*.28}" fill="#E8E8E8"/>`, label:'Chef Whites' },
+      { id:2, draw:(s)=>`<rect x="${s*.22}" y="${s*.7}" width="${s*.56}" height="${s*.28}" rx="${s*.04}" fill="#4A2C10"/><path d="M${s*.35} ${s*.7} L${s*.3} ${s*.64} L${s*.5} ${s*.68} L${s*.7} ${s*.64} L${s*.65} ${s*.7}" fill="#3A1C08"/>`, label:'Desi Kurta' },
+      { id:3, draw:(s)=>`<rect x="${s*.24}" y="${s*.7}" width="${s*.52}" height="${s*.28}" rx="${s*.04}" fill="#C4785A"/><path d="M${s*.36} ${s*.7} Q${s*.5} ${s*.62} ${s*.64} ${s*.7}" fill="#A06040"/>`, label:'Orange Chef' },
+      { id:4, draw:(s)=>`<rect x="${s*.22}" y="${s*.7}" width="${s*.56}" height="${s*.28}" rx="${s*.04}" fill="#1A1A2E"/><circle cx="${s*.5}" cy="${s*.82}" r="${s*.04}" fill="#F0C070"/>`, label:'Midnight Cook' },
+    ]
+  },
+
+  stickers:{
+    label:'Cooking Stickers & Accessories', cols:5,
+    items:[
+      { id:-1, draw:()=>``, label:'None' },
+      { id:0,  draw:(s)=>`<path d="M${s*.5} ${s*.2} L${s*.44} ${s*.5} L${s*.5} ${s*.75} L${s*.56} ${s*.5} Z" fill="#8B4513" stroke="#5C2D0A" stroke-width="0.8"/><ellipse cx="${s*.5}" cy="${s*.2}" rx="${s*.08}" ry="${s*.06}" fill="#C4785A"/>`, label:'Wooden Spoon' },
+      { id:1,  draw:(s)=>`<rect x="${s*.42}" y="${s*.1}" width="${s*.16}" height="${s*.55}" rx="${s*.04}" fill="#B0B0B0" stroke="#888" stroke-width="0.8"/><ellipse cx="${s*.5}" cy="${s*.68}" rx="${s*.22}" ry="${s*.1}" fill="#C0C0C0" stroke="#888" stroke-width="0.8"/>`, label:'Rolling Pin' },
+      { id:2,  draw:(s)=>`<ellipse cx="${s*.5}" cy="${s*.55}" rx="${s*.3}" ry="${s*.25}" fill="#E8C87A" stroke="#C4A050" stroke-width="0.8"/><path d="M${s*.2} ${s*.55} Q${s*.2} ${s*.3} ${s*.5} ${s*.3} Q${s*.8} ${s*.3} ${s*.8} ${s*.55}" fill="#C4A050" stroke="#A08030" stroke-width="0.8"/>`, label:'Curry Pot' },
+      { id:3,  draw:(s)=>`<path d="M${s*.36} ${s*.12} Q${s*.5} ${s*.08} ${s*.64} ${s*.12} L${s*.72} ${s*.5} L${s*.64} ${s*.55} L${s*.5} ${s*.58} L${s*.36} ${s*.55} L${s*.28} ${s*.5} Z" fill="#D4E8D4" stroke="#8AAA80" stroke-width="0.8"/><circle cx="${s*.5}" cy="${s*.3}" r="${s*.06}" fill="#6A9A6A"/>`, label:'Naan Bread' },
+      { id:4,  draw:(s)=>`<path d="M${s*.5} ${s*.12} Q${s*.62} ${s*.2} ${s*.6} ${s*.35} Q${s*.55} ${s*.55} ${s*.5} ${s*.65} Q${s*.45} ${s*.55} ${s*.4} ${s*.35} Q${s*.38} ${s*.2} ${s*.5} ${s*.12}" fill="#C4001A" stroke="#8B0000" stroke-width="0.8"/>`, label:'Chili Pepper' },
+      { id:5,  draw:(s)=>`<ellipse cx="${s*.5}" cy="${s*.5}" rx="${s*.28}" ry="${s*.22}" fill="#D4C0A0" stroke="#A89060" stroke-width="0.8"/><ellipse cx="${s*.5}" cy="${s*.4}" rx="${s*.22}" ry="${s*.16}" fill="#C0A880" stroke="#A08050" stroke-width="0.8"/>`, label:'Mortar & Pestle' },
+      { id:6,  draw:(s)=>`<path d="M${s*.3} ${s*.2} L${s*.4} ${s*.6} L${s*.6} ${s*.6} L${s*.7} ${s*.2}" fill="#C0C0C0" stroke="#888" stroke-width="0.8"/><path d="M${s*.28} ${s*.18} L${s*.72} ${s*.18}" stroke="#888" stroke-width="0.8"/><path d="M${s*.4} ${s*.3} L${s*.6} ${s*.3} M${s*.38} ${s*.42} L${s*.62} ${s*.42}" stroke="#B0B0B0" stroke-width="0.6"/>`, label:'Whisk' },
+      { id:7,  draw:(s)=>`<path d="M${s*.5} ${s*.1} L${s*.55} ${s*.7} L${s*.5} ${s*.78} L${s*.45} ${s*.7} Z" fill="#C0C0C0" stroke="#888" stroke-width="0.8"/><rect x="${s*.38}" y="${s*.1}" width="${s*.24}" height="${s*.06}" rx="${s*.02}" fill="#B0B0B0"/>`, label:'Spatula' },
+      { id:8,  draw:(s)=>`<path d="M${s*.3} ${s*.15} L${s*.3} ${s*.65} Q${s*.3} ${s*.75} ${s*.5} ${s*.75} Q${s*.7} ${s*.75} ${s*.7} ${s*.65} L${s*.7} ${s*.15}" fill="none" stroke="#888" stroke-width="${s*.04}" stroke-linecap="round"/><line x1="${s*.3}" y1="${s*.35}" x2="${s*.7}" y2="${s*.35}" stroke="#888" stroke-width="${s*.03}"/>`, label:'Tongs' },
+      { id:9,  draw:(s)=>`<path d="M${s*.36} ${s*.1} Q${s*.5} ${s*.06} ${s*.64} ${s*.1} L${s*.68} ${s*.4} Q${s*.6} ${s*.45} ${s*.5} ${s*.46} Q${s*.4} ${s*.45} ${s*.32} ${s*.4} Z" fill="#E8D8B0" stroke="#C4A050" stroke-width="0.8"/><ellipse cx="${s*.5}" cy="${s*.52}" rx="${s*.12}" ry="${s*.08}" fill="#D4B860"/>`, label:'Baster' },
+      { id:10, draw:(s)=>`<path d="M${s*.5} ${s*.12} Q${s*.7} ${s*.2} ${s*.68} ${s*.45} Q${s*.5} ${s*.6} ${s*.32} ${s*.45} Q${s*.3} ${s*.2} ${s*.5} ${s*.12}" fill="#F0C070" stroke="#C4A050" stroke-width="0.8"/><path d="M${s*.5} ${s*.6} L${s*.5} ${s*.8}" stroke="#C4A050" stroke-width="${s*.03}"/>`, label:'Chai Cup' },
+      { id:11, draw:(s)=>`<rect x="${s*.3}" y="${s*.2}" width="${s*.4}" height="${s*.5}" rx="${s*.04}" fill="#2C1808" stroke="#4A2C10" stroke-width="0.8"/><circle cx="${s*.4}" cy="${s*.38}" r="${s*.04}" fill="#C4785A"/><circle cx="${s*.6}" cy="${s*.38}" r="${s*.04}" fill="#C4785A"/><circle cx="${s*.4}" cy="${s*.55}" r="${s*.04}" fill="#C4785A"/><circle cx="${s*.6}" cy="${s*.55}" r="${s*.04}" fill="#C4785A"/>`, label:'Western Grill' },
+    ]
+  },
+};
+
+// ── State management ──
+let selectedLookSlot = 0;
+
+function getTraitValue(trait){ return state[trait]; }
+
+function setTrait(trait, value){
+  state[trait] = value;
+  renderPreview();
+  // Update tile selections
+  document.querySelectorAll(`[data-trait="${trait}"]`).forEach(t => {
+    t.classList.toggle('selected', parseInt(t.dataset.id) === value);
+  });
+}
+
+// ── Build SVG face (180×180) ──
+function buildFaceSVG(s, cfg){
+  const skin = cfg.skin || '#F5CBA7';
+  const parts = [];
+
+  // Hair behind head
+  if (cfg.hair !== undefined && cfg.hair >= 0) {
+    const hairDef = TRAITS.hair.items.find(i=>i.id===cfg.hair);
+    if (hairDef) parts.push(hairDef.draw(s, skin));
+  }
+
+  // Ears
+  const earDef = TRAITS.ears.items.find(i=>i.id===cfg.ears);
+  if (earDef) parts.push(earDef.draw(s, skin));
+
+  // Head
+  const headDef = TRAITS.head.items.find(i=>i.id===cfg.head);
+  if (headDef) parts.push(headDef.draw(s, skin));
+
+  // Hat
+  if (cfg.hat >= 0) {
+    const hatDef = TRAITS.hats.items.find(i=>i.id===cfg.hat);
+    if (hatDef) parts.push(hatDef.draw(s, skin));
+  }
+
+  // Brows
+  const browDef = TRAITS.brows.items.find(i=>i.id===cfg.brows);
+  if (browDef) parts.push(browDef.draw(s, skin));
+
+  // Eyes
+  const eyeDef = TRAITS.eyes.items.find(i=>i.id===cfg.eyes);
+  if (eyeDef) parts.push(eyeDef.draw(s, skin));
+
+  // Nose
+  const noseDef = TRAITS.nose.items.find(i=>i.id===cfg.nose);
+  if (noseDef) parts.push(noseDef.draw(s, skin));
+
+  // Mouth
+  const mouthDef = TRAITS.mouth.items.find(i=>i.id===cfg.mouth);
+  if (mouthDef) parts.push(mouthDef.draw(s, skin));
+
+  // Sticker (shown top-right for face view)
+  if (cfg.sticker >= 0) {
+    const stickerDef = TRAITS.stickers.items.find(i=>i.id===cfg.sticker);
+    if (stickerDef) {
+      parts.push(`<g transform="translate(${s*.66},${s*.04}) scale(0.3)">${stickerDef.draw(s, skin)}</g>`);
+    }
+  }
+
+  return parts.join('\n');
+}
+
+// ── Build full body SVG (180×260) ──
+function buildBodySVG(cfg){
+  const skin = cfg.skin || '#F5CBA7';
+  const w=180, h=260;
+  const parts = [];
+
+  // Outfit / body
+  const outDef = TRAITS.outfit.items.find(i=>i.id===cfg.outfit);
+  const outSVG = outDef ? outDef.draw(80, skin) : '';
+  parts.push(`<g transform="translate(50,140) scale(1)">${buildBodyBase(w,h,skin)}${outSVG}</g>`);
+
+  // Face on top of body
+  parts.push(`<g transform="translate(22,0) scale(0.76)">${buildFaceSVG(180, cfg)}</g>`);
+
+  // Sticker held in hand
+  if (cfg.sticker >= 0) {
+    const stickerDef = TRAITS.stickers.items.find(i=>i.id===cfg.sticker);
+    if (stickerDef) {
+      parts.push(`<g transform="translate(135,155) scale(0.28)">${stickerDef.draw(100, skin)}</g>`);
+    }
+  }
+
+  return parts.join('\n');
+}
+
+function buildBodyBase(w,h,skin){
+  return `
+    <ellipse cx="${w/2}" cy="${h*.42}" rx="${w*.18}" ry="${h*.1}" fill="${skin}"/>
+    <rect x="${w*.32}" y="${h*.51}" width="${w*.36}" height="${h*.32}" rx="${w*.06}" fill="${skin}" opacity="0.6"/>
+    <line x1="${w*.28}" y1="${h*.52}" x2="${w*.18}" y2="${h*.7}" stroke="${skin}" stroke-width="${w*.09}" stroke-linecap="round"/>
+    <line x1="${w*.72}" y1="${h*.52}" x2="${w*.82}" y2="${h*.7}" stroke="${skin}" stroke-width="${w*.09}" stroke-linecap="round"/>
+    <line x1="${w*.38}" y1="${h*.83}" x2="${w*.36}" y2="${h*.98}" stroke="${skin}" stroke-width="${w*.08}" stroke-linecap="round"/>
+    <line x1="${w*.62}" y1="${h*.83}" x2="${w*.64}" y2="${h*.98}" stroke="${skin}" stroke-width="${w*.08}" stroke-linecap="round"/>
+  `;
+}
+
+function renderPreview(){
+  const faceEl = document.getElementById('avatarPreview');
+  const bodyEl = document.getElementById('avatarPreviewFull');
+  if(faceEl) faceEl.innerHTML = buildFaceSVG(180, state);
+  if(bodyEl) bodyEl.innerHTML = buildBodySVG(state);
+}
+
+// ── View toggle ──
+function setView(v, btn){
+  document.getElementById('faceView').style.display = v==='face' ? '' : 'none';
+  document.getElementById('bodyView').style.display = v==='body' ? '' : 'none';
+  document.querySelectorAll('.ptog').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── Randomise ──
+function randomise(){
+  const rand = (arr) => arr[Math.floor(Math.random()*arr.length)];
+  state.head   = rand(TRAITS.head.items).id;
+  state.eyes   = rand(TRAITS.eyes.items).id;
+  state.brows  = rand(TRAITS.brows.items).id;
+  state.mouth  = rand(TRAITS.mouth.items).id;
+  state.nose   = rand(TRAITS.nose.items).id;
+  state.ears   = rand(TRAITS.ears.items).id;
+  state.hair   = rand(TRAITS.hair.items).id;
+  state.hat    = Math.random() > 0.5 ? rand(TRAITS.hats.items).id : -1;
+  state.outfit = rand(TRAITS.outfit.items).id;
+  state.sticker= Math.random() > 0.5 ? rand(TRAITS.stickers.items).id : -1;
+  state.skin   = SKIN_TONES[Math.floor(Math.random()*SKIN_TONES.length)];
+  const idx    = SKIN_TONES.indexOf(state.skin);
+  document.getElementById('skinSlider').value = Math.round(idx/(SKIN_TONES.length-1)*100);
+  document.getElementById('skinSwatch').style.background = state.skin;
+  renderPreview();
+  syncTileSelections();
+}
+
+function syncTileSelections(){
+  Object.keys(TRAITS).forEach(trait => {
+    document.querySelectorAll(`[data-trait="${trait}"]`).forEach(t => {
+      t.classList.toggle('selected', parseInt(t.dataset.id) === state[trait]);
+    });
+  });
+}
+
+// ── Build trait UI ──
+function buildTraitSection(traitKey){
+  const def = TRAITS[traitKey];
+  const section = document.createElement('div');
+  section.className = 'trait-section';
+  section.id = 'section-' + traitKey;
+
+  const head = document.createElement('div');
+  head.className = 'trait-section-head';
+  head.innerHTML = `<h3>${def.label}</h3><span class="toggle-icon">▾</span>`;
+  head.onclick = () => {
+    head.classList.toggle('collapsed');
+    grid.classList.toggle('hidden');
+  };
+  section.appendChild(head);
+
+  const grid = document.createElement('div');
+  grid.className = 'trait-grid';
+  grid.style.gridTemplateColumns = `repeat(${def.cols}, 1fr)`;
+
+  def.items.forEach(item => {
+    const tile = document.createElement('div');
+    tile.className = 'trait-tile' + (item.id === -1 ? ' none-tile' : '') + (state[traitKey] === item.id ? ' selected' : '');
+    tile.dataset.trait = traitKey;
+    tile.dataset.id    = item.id;
+    tile.title         = item.label || '';
+    tile.onclick       = () => setTrait(traitKey, item.id);
+
+    if(item.id === -1){
+      tile.textContent = item.label || 'None';
+    } else {
+      const previewSize = 44;
+      const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+      svg.setAttribute('viewBox',`0 0 ${previewSize} ${previewSize}`);
+      svg.innerHTML = item.draw(previewSize, state.skin);
+      tile.appendChild(svg);
+      if(item.label){
+        const lbl = document.createElement('div');
+        lbl.className = 'sticker-label';
+        lbl.textContent = item.label;
+        tile.appendChild(lbl);
+      }
+    }
+    grid.appendChild(tile);
+  });
+
+  section.appendChild(grid);
+  return section;
+}
+
+function jumpTo(traitKey, btn){
+  document.querySelectorAll('.cat-tag').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const el = document.getElementById('section-'+traitKey);
+  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ── Saved looks ──
+function saveLookPrompt(){ document.getElementById('lookModal').style.display='flex'; }
+function closeLookModal(){ document.getElementById('lookModal').style.display='none'; }
+
+function saveLook(slot){
+  savedLooks[slot] = JSON.parse(JSON.stringify(state));
+  // Update slot thumbnail
+  const slotEl = document.getElementById('look'+slot);
+  slotEl.classList.add('filled');
+  const miniSvg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  miniSvg.setAttribute('viewBox','0 0 180 180');
+  miniSvg.style.width='100%';
+  miniSvg.style.height='100%';
+  miniSvg.innerHTML = buildFaceSVG(180, savedLooks[slot]);
+  slotEl.innerHTML='';
+  slotEl.appendChild(miniSvg);
+  document.getElementById('saveMsg').textContent = `Look ${slot+1} saved.`;
+  setTimeout(()=>{ document.getElementById('saveMsg').textContent=''; },2000);
+  // Save to localStorage as backup
+  localStorage.setItem('chumchi_looks', JSON.stringify(savedLooks));
+}
+
+function loadLook(slot){
+  if(!savedLooks[slot]) return;
+  state = JSON.parse(JSON.stringify(savedLooks[slot]));
+  document.getElementById('skinSlider').value = Math.round(SKIN_TONES.indexOf(state.skin)/(SKIN_TONES.length-1)*100);
+  document.getElementById('skinSwatch').style.background = state.skin;
+  renderPreview();
+  syncTileSelections();
+}
+
+// ── Confirm avatar → save to Supabase ──
+async function confirmAvatar(){
+  const btn = document.querySelector('.btn-primary[onclick="confirmAvatar()"]');
+  btn.textContent = 'Saving…';
+  btn.disabled = true;
+
+  const memberId = sess.memberId;
+  if(!memberId){ window.location.href='tree.html'; return; }
+
+  // Save to Supabase members table
+  sbReady(async () => {
+    const { error } = await window.sb
+      .from('members')
+      .update({ avatar_config: JSON.stringify(state) })
+      .eq('username', memberId);
+
+    if(error){
+      console.error('Avatar save error:', error);
+      btn.textContent = '✓ Use This Avatar';
+      btn.disabled = false;
+      document.getElementById('saveMsg').textContent = 'Saved locally — will sync when online.';
+    }
+
+    // Always save to localStorage too
+    localStorage.setItem('chumchi_avatar_' + memberId, JSON.stringify(state));
+    sessionStorage.setItem('chumchi_avatar_set','true');
+
+    // Animate then redirect
+    animateConfirm();
+  });
+}
+
+function animateConfirm(){
+  const svg = document.getElementById('avatarPreview');
+  const poses = ['rotate(0deg)','rotate(15deg)','rotate(-15deg)','scale(1.15)'];
+  let i=0;
+  svg.style.transition = 'transform 0.25s';
+  const interval = setInterval(()=>{
+    svg.style.transform = poses[i % poses.length];
+    i++;
+    if(i > 8){
+      clearInterval(interval);
+      svg.style.transform = 'scale(0)';
+      svg.style.transition = 'transform 0.4s cubic-bezier(0.4,0,0.2,1)';
+      setTimeout(()=>{ window.location.href='tree.html'; }, 450);
+    }
+  }, 220);
+}
+
+// ── Init ──
+function init(){
+  // Build all trait sections
+  const container = document.getElementById('traitsContainer');
+  ['head','eyes','brows','mouth','nose','ears','hair','hats','outfit','stickers'].forEach(k => {
+    container.appendChild(buildTraitSection(k));
+  });
+
+  // Init skin
+  document.getElementById('skinSwatch').style.background = state.skin;
+
+  // Load saved looks
+  try{
+    const saved = localStorage.getItem('chumchi_looks');
+    if(saved) savedLooks = JSON.parse(saved);
+    savedLooks.forEach((look,i) => { if(look) saveLook(i); });
+  }catch(e){}
+
+  // Load existing avatar if member has one
+  sbReady(async () => {
+    const memberId = sess?.memberId;
+    if(!memberId) return;
+    const localAv = localStorage.getItem('chumchi_avatar_'+memberId);
+    if(localAv){
+      try{
+        state = JSON.parse(localAv);
+        document.getElementById('skinSlider').value = Math.round(SKIN_TONES.indexOf(state.skin)/(SKIN_TONES.length-1)*100)||20;
+        document.getElementById('skinSwatch').style.background = state.skin;
+        renderPreview();
+        syncTileSelections();
+      }catch(e){}
+    }
+  });
+
+  renderPreview();
+}
+
+init();
+</script>
+</body>
+</html>
